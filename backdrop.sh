@@ -71,9 +71,23 @@ while true; do
 done
 
 # 2. Need to grab the file names from those directories with Full Path
-# TODO: Need to also take into consideration other paths.
 # FUTURE TODO: Need to see how to handle subfolders
-WALLPAPERS=$(find "$PICTURES_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+# FUTURE TODO: Need to see how to handle multiple valid directories
+#   For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
+# FUTURE TODO: Need to see how to manage CUSTOM_PATH to persist and provide it as an option.
+
+# Check if image directories exist, give priority to ".config".
+if [[ -d $CONFIGS_PATH ]]; then
+    WALLPAPERS=$(find "$CONFIGS_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+elif [[ -d $PICTURES_PATH ]]; then
+    WALLPAPERS=$(find "$PICTURES_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+else
+    echo "No valid directories found to list images. Please assure you have one of the following configured:"
+    echo "     - $CONFIGS_PATH"
+    echo "     - $PICTURES_PATH"
+    echo ""
+    exit 1
+fi
 
 # Conver wallpapers to an array so we can reference them by index
 IFS=$'\n' WALLPAPERS_ARRAY=($WALLPAPERS)
@@ -105,14 +119,20 @@ while true; do
     fi
 done
 
-
-# 5. Provide a message confirming backdrop has been changed.
+exit 0
 
 # Future Tasks:
+# * See why it doesn't work with zsh, but it does work in Bash? (Might need to migrate to Golang by then.)
 # * Provide flags to revert the last image selected "--revert or -r"
 # * Provide a flag to just give a filename if the user knows it and automatically set that new bg image "--image or -i" (Flag name could change)
 # * Provide a Preview Functionality before saving.
 #   - This could re-use the revert functionality above. Function would be good.
 # * See how a slide show implementation could fit here.
+# * Need to see how to integrate "fzf" to fuzzy find the background image in the directory.
+#   - Then the user hits enter and it previews the image.
+#   - If confirmed the background will stay changed.
+#   - If denied, the background will revert to the one the user had.
+# * Make install script so tool is ready to be used by just running one script.
+# * Make prompt experience more pretty (Low priority but it's bound to happen)
+# * Super future: see how midjourney could be a cool integration with this tool.
 
-exit 0
