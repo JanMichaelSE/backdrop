@@ -5,7 +5,6 @@
 #   - MVP: Just set the background and exit.
 #   - IDEAL: Show preview and ask for confirmation before saving. If rejected revert to previous background.
 
-# TODO MVP:
 usage() {
     echo "Usage: ${0} [-rh] [-p PATH]"
     echo 'DESCRIPTION'
@@ -22,13 +21,23 @@ usage() {
     exit 1
 }
 
-# TODO: Might not be needed. But have it here just incase
 check_command_status() {
     # Check if last command was successful
     if [[ "${?}" -ne 0 ]]; then
       echo "${1} was not success full." >&2
       exit 1
     fi
+}
+
+select_image_path() {
+    SELECTED_PATH=${1}
+    WALLPAPERS=$(find -L "${1}" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+}
+
+set_wallpaper() {
+    gsettings set org.gnome.desktop.background picture-uri "$1"
+    gsettings set org.gnome.desktop.background picture-uri-dark "$1"
+    check_command_status "Changing background image"
 }
 
 # 1. Need to specify PATHS to search images under.
@@ -78,9 +87,9 @@ done
 
 # Check if image directories exist, give priority to ".config".
 if [[ -d $CONFIGS_PATH ]]; then
-    WALLPAPERS=$(find "$CONFIGS_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+    select_image_path $CONFIGS_PATH
 elif [[ -d $PICTURES_PATH ]]; then
-    WALLPAPERS=$(find "$PICTURES_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+    select_image_path $PICTURES_PATH
 else
     echo "No valid directories found to list images. Please assure you have one of the following configured:"
     echo "     - $CONFIGS_PATH"
@@ -106,14 +115,27 @@ while true; do
        echo "Exiting backdrop..." 
        exit 0
     elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
+        PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
         SELECTED_WALLPAPAER=${WALLPAPERS_ARRAY[$REPLY-1]}
 
-        gsettings set org.gnome.desktop.background picture-uri "file://$PICTURES_PATH/$SELECTED_WALLPAPAER"
-        gsettings set org.gnome.desktop.background picture-uri-dark "file://$PICTURES_PATH/$SELECTED_WALLPAPAER"
-        check_command_status "Changing background image"
+        set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPAER"
 
-        echo "Successfully changed background image."
-        break
+        while true; do
+            read -p "Want to save this change? [y/N]: " CHOICE
+            case "$CHOICE" in
+                [yY])
+                    echo "Successfully changed background image."
+                    break 2
+                    ;;
+                [nN]|"")
+                    set_wallpaper "$PREVIOUS_WALLPAPER"
+                    break
+                    ;;
+                *)
+                    echo "Invalid input..."
+                    ;;
+            esac
+        done     
     else
         echo "Invalid selection, please try again."
     fi
@@ -122,12 +144,13 @@ done
 exit 0
 
 # Future Tasks:
-# * See why it doesn't work with zsh, but it does work in Bash? (Might need to migrate to Golang by then.)
+# * Improve Readme.md for usage on this tool and installation.
 # * Provide flags to revert the last image selected "--revert or -r"
 # * Provide a flag to just give a filename if the user knows it and automatically set that new bg image "--image or -i" (Flag name could change)
 # * Provide a Preview Functionality before saving.
 #   - This could re-use the revert functionality above. Function would be good.
 # * See how a slide show implementation could fit here.
+# * See why it doesn't work with zsh, but it does work in Bash? (Might need to migrate to Golang by then.)
 # * Need to see how to integrate "fzf" to fuzzy find the background image in the directory.
 #   - Then the user hits enter and it previews the image.
 #   - If confirmed the background will stay changed.
