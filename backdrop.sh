@@ -71,8 +71,41 @@ while true; do
 done
 
 # 2. Need to grab the file names from those directories with Full Path
-# 3. Need to Present those options to the user. (Use a Select)
-# 4. Save user selection and change that background.
+# TODO: Need to also take into consideration other paths.
+# FUTURE TODO: Need to see how to handle subfolders
+WALLPAPERS=$(find "$PICTURES_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
+
+# Conver wallpapers to an array so we can reference them by index
+IFS=$'\n' WALLPAPERS_ARRAY=($WALLPAPERS)
+
+# Display options to user
+i=1
+for wallpaper in "${WALLPAPERS_ARRAY[@]}"; do
+    echo "$i) $wallpaper"
+    ((i++))
+done
+
+# Get user selection
+while true; do
+    read -p "Please select image background image (or press 'q' to quit): " REPLY
+    if [[ $REPLY == 'q' ]]; then
+       echo "Exiting backdrop..." 
+       exit 0
+    elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
+        SELECTED_WALLPAPAER=${WALLPAPERS_ARRAY[$REPLY-1]}
+
+        gsettings set org.gnome.desktop.background picture-uri "file://$PICTURES_PATH/$SELECTED_WALLPAPAER"
+        gsettings set org.gnome.desktop.background picture-uri-dark "file://$PICTURES_PATH/$SELECTED_WALLPAPAER"
+        check_command_status "Changing background image"
+
+        echo "Successfully changed background image."
+        break
+    else
+        echo "Invalid selection, please try again."
+    fi
+done
+
+
 # 5. Provide a message confirming backdrop has been changed.
 
 # Future Tasks:
