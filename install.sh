@@ -7,13 +7,12 @@ append_backdrop_to_path() {
    echo '' >> "$CONFIG_PATH"
    echo "# Appended Backdrop to PATH, done by install script." >> "$CONFIG_PATH"
    if [[ $CONFIG_FILE = '.zshrc' || $CONFIG_FILE = '.bashrc' ]]; then
-      echo "Adding to bashrc/zshrc"
       echo 'export PATH=$PATH:$HOME/.backdrop/bin' >> "$CONFIG_PATH"
    else
-      echo "Adding to fish"
       echo 'set -gx PATH $HOME/.backdrop/bin $PATH' >> "$CONFIG_PATH"
    fi
    echo '' >> "$CONFIG_PATH"
+   echo "Completed Setup for $CONFIG_FILE"
    echo '------------------'
    echo 'IMPORTANT:'
    echo "  - Remember to SOURCE your $CONFIG_PATH for changes to take affect. If not re-open your terminal emulator."
