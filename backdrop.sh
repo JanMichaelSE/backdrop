@@ -48,12 +48,9 @@ append_backdrop_custom_image_path() {
    local CONFIG_PATH="$HOME/$CONFIG_FILE"
    local IMAGE_PATH="$2"
 
-   echo "Config Path: $CONFIG_PATH"
-   echo "Image Path: $IMAGE_PATH"
    echo '' >> "$CONFIG_PATH"
    echo "# Setup Backdrop Custom Image Path." >> "$CONFIG_PATH"
    if [[ $CONFIG_FILE = '.zshrc' || $CONFIG_FILE = '.bashrc' ]]; then
-       echo "Setting values for: $CONFIG_FILE"
       echo "export BACKDROP_IMAGE_PATH=$IMAGE_PATH" >> "$CONFIG_PATH"
    else
       echo "set -gx BACKDROP_IMAGE_PATH $IMAGE_PATH" >> "$CONFIG_PATH"
@@ -165,7 +162,12 @@ if [[ $IS_FUZZY_FINDING = 'true' ]]; then
         PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
         SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
 
-        set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
+        if [[ -f "$SELECTED_PATH/$SELECTED_WALLPAPER" ]]; then
+            set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
+        else
+            echo "No image selected, exiting..."
+            break
+        fi
 
         while true; do
             read -p "Want to save this change? [y/N]: " CHOICE
