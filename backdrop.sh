@@ -1,3 +1,5 @@
+#!/bin/bash
+
 usage() {
     echo "Usage: ${0} [-rh] [-p PATH]"
     echo 'DESCRIPTION'
