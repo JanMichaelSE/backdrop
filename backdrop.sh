@@ -103,7 +103,7 @@ fi
 if [[ $IS_FUZZY_FINDING = 'true' ]]; then
     while true; do
         PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
-        SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf)
+        SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
 
         set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
 
