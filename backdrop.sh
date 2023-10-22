@@ -131,10 +131,6 @@ while true; do
     shift # Move to next option
 done
 
-# FUTURE TODO: Need to see how to handle subfolders
-# FUTURE TODO: Need to see how to handle multiple valid directories
-#   For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
-
 # Check if image directories exist.
 PICTURES_PATH="$HOME/Pictures/wallpapers"
 CONFIGS_PATH="$HOME/.config/backdrop/wallpapers"
@@ -156,7 +152,6 @@ else
 fi
 
 # Get user selection
-# TODO: NEED TO REFACTOR THIS
 if [[ $IS_FUZZY_FINDING = 'true' ]]; then
     while true; do
         PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
@@ -187,7 +182,7 @@ if [[ $IS_FUZZY_FINDING = 'true' ]]; then
         done     
     done
 else
-    # Conver wallpapers to an array so we can reference them by index
+    # Convert wallpapers to an array so we can reference them by index
     IFS=$'\n' WALLPAPERS_ARRAY=($WALLPAPERS)
 
     # Display options to user
@@ -240,6 +235,9 @@ exit 0
 #   - Then the user hits enter and it previews the image.
 #   - If confirmed the background will stay changed.
 #   - If denied, the background will revert to the one the user had.
+# * Need to see how to handle subfolders
+# * Need to see how to handle multiple valid directories
+#       For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
 # * Add support for CentOS (Because thats what I use at work)
 # * Add support for Mac (For Omar)
