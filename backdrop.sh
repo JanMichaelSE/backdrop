@@ -11,9 +11,14 @@ usage() {
     echo "  -p, --path <PATH>    Set a custom path to find wallpaper images. If not provided, a default"
     echo '                       path will be used.'
     echo '  -f, --fuzzy          Performs a fuzzy finding (Requires fzf).'
-    echo '  -r, --revert         Reverts to the last wallpaper that was set prior to the most recent change.'
     echo "  -h, --help           Displays help information on how to use the ${0} command, listing all"
+    echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
+    echo ''
+    echo 'IMAGES'
+    echo '  Images must be stored in ONE of the following paths:'
+    echo "     - $HOME/.config/backdrop/wallpapers (This one has priority)"
+    echo "     - $HOME/Pictures/wallpapers"
     exit 1
 }
 
@@ -38,7 +43,7 @@ set_wallpaper() {
 
 
 # This is how to read long and short options, the "--" is to know when we are done.
-OPTIONS=$(getopt -o p:frh -l path:,fuzzy,revert,help -- "$@")
+OPTIONS=$(getopt -o p:fh -l path:,fuzzy,help,uninstall -- "$@")
 check_command_status "Getting command options"
 
 # Reorder the arguments to ensure they are correct
@@ -61,9 +66,9 @@ while true; do
         -f|--fuzzy)
             IS_FUZZY_FINDING=true
             ;;
-        -r|--revert)
-            echo "Reverting image... STILL PENDING"
-            # TODO: Need to see how to make this persist? Config file maybe?
+        --uninstall)
+            echo "Uninstalling Backdrop..."
+            "$HOME/.backdrop/scripts/uninstall.sh"
             exit 0
             ;;
         -h|--help) usage;;
@@ -76,7 +81,6 @@ while true; do
     shift # Move to next option
 done
 
-# 2. Need to grab the file names from those directories with Full Path
 # FUTURE TODO: Need to see how to handle subfolders
 # FUTURE TODO: Need to see how to handle multiple valid directories
 #   For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
@@ -172,14 +176,14 @@ exit 0
 
 # Future Tasks:
 # * Improve Readme.md for usage on this tool and installation.
-# * Provide flags to revert the last image selected "--revert or -r"
-# * Provide a flag to just give a filename if the user knows it and automatically set that new bg image "--image or -i" (Flag name could change)
+# * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
 # * See how a slide show implementation could fit here.
 # * See why it doesn't work with zsh, but it does work in Bash? (Might need to migrate to Golang by then.)
 #   - Then the user hits enter and it previews the image.
 #   - If confirmed the background will stay changed.
 #   - If denied, the background will revert to the one the user had.
-# * Make install script so tool is ready to be used by just running one script.
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
+# * Add support for CentOS (Because thats what I use at work)
+# * Add support for Mac (For Omar)
 # * Super future: see how midjourney could be a cool integration with this tool.
 

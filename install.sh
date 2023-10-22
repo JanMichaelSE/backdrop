@@ -14,29 +14,41 @@ append_backdrop_to_path() {
       echo 'set -gx PATH $HOME/.backdrop/bin $PATH' >> "$CONFIG_PATH"
    fi
    echo '' >> "$CONFIG_PATH"
-
    echo '------------------'
    echo 'IMPORTANT:'
    echo "  - Remember to SOURCE your $CONFIG_PATH for changes to take affect. If not re-open your terminal emulator."
    echo '------------------'
+   echo ''
 }
 
-if [[ -f "$HOME/.zshrc" ]]; then
+# Check if fzf is installed
+echo -e "\n<<< Checking if fzf is installed. >>>"
+if ! command -v "fzf" &> /dev/null; then
+  echo "fzf is not installed. Installing..."
+  sudo apt install fzf -y
+else
+  echo "fzf is already installed."
+fi
+
+if [[ -f "$HOME/.zshrc" || -L "$HOME/.zshrc" ]]; then
    if ! grep -q ".backdrop/bin" "$HOME/.zshrc"; then
+      echo ''
       echo "Backdrop not in zshrc, adding PATH."
       append_backdrop_to_path ".zshrc"
    fi
 fi
 
-if [[ -f "$HOME/.bashrc" ]]; then
+if [[ -f "$HOME/.bashrc" || -L "$HOME/.bashrc" ]]; then
    if ! grep -q ".backdrop/bin" "$HOME/.bashrc"; then
+      echo ''
       echo "Backdrop not in bashrc, adding PATH."
       append_backdrop_to_path ".bashrc"
    fi
 fi
 
-if [[ -f "$HOME/.config/config.fish" ]]; then
+if [[ -f "$HOME/.config/config.fish" || -L "$HOME/.config/config.fish" ]]; then
    if ! grep -q ".backdrop/bin" "$HOME/.config/config.fish"; then
+      echo ''
       echo "Backdrop not in config.fish, adding PATH."
       append_backdrop_to_path ".config/config.fish"
    fi
@@ -45,7 +57,9 @@ fi
 if [[ ! -d "$HOME/.backdrop" ]]; then
    echo "Configuring '.backdrop/' at $HOME dir."
    mkdir -p "$HOME/.backdrop/bin"
+   mkdir -p "$HOME/.backdrop/scripts"
    cp -p "./backdrop.sh" "$HOME/.backdrop/bin/backdrop"
+   cp -p "./uninstall.sh" "$HOME/.backdrop/scripts/uninstall.sh"
    echo "Successfully configured backdrop!"
 else
    echo "Backdrop already configured."
