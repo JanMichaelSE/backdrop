@@ -5,21 +5,26 @@
 [![Contributors Badge](https://img.shields.io/github/contributors/JanMichaelSE/backdrop)](https://github.com/JanMichaelSE/backdrop/graphs/contributors)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 
-Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease. This tool allows you to set a new wallpaper, revert to a previous one, and specify the directory where your wallpaper images are stored. 
+Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored. 
 
 ## :star: Features
 
 - Set a new wallpaper
-- Revert to a previous wallpaper
 - Specify a custom path for wallpaper images
 - Fuzzy finding of wallpapers (Requires fzf)
 - Uninstall Backdrop
 
 ## :wrench: Installation
 
-The installation process is straightforward. Simply clone the repository and run the install script. 
+The installation process is straightforward. Simply clone the repository and run the `install.sh` script. 
 
-Please note that Backdrop currently supports Bash and is in the process of adding support for Zsh, CentOS, and Mac.
+```bash
+git clone https://github.com/JanMichaelSE/backdrop.git
+cd backdrop
+./install.sh
+```
+
+<u>Note: Backdrop currently supports Bash and Zsh. Planning on supporting MacOS, CentOS and Fish in the future.</u>
 
 ## :package: Dependencies
 
