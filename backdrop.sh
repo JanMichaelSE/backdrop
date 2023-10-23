@@ -228,18 +228,26 @@ fi
 exit 0
 
 # Future Tasks:
-# * Improve Readme.md for usage on this tool and installation.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
 # * See how a slide show implementation could fit here.
-# * See why it doesn't work with zsh, but it does work in Bash? (Might need to migrate to Golang by then.)
-#   - Then the user hits enter and it previews the image.
-#   - If confirmed the background will stay changed.
-#   - If denied, the background will revert to the one the user had.
+# * Allow users to provide URL and set them as wallpapers.
+#   - This could mean we download the image and set it.
+#   - If the user does not like it then we erase the image from the folders.
+#   - If he likes it then it stays on the folder.
 # * Need to see how to handle subfolders
 # * Need to see how to handle multiple valid directories
 #       For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
-# * Add support for CentOS (Because thats what I use at work)
-# * Add support for Mac (For Omar)
-# * Super future: see how midjourney could be a cool integration with this tool.
+# * Add support for the following platforms:
+#   - Add support for CentOS (Because thats what I use at work)
+#   - Add support for Fish (Because it's cool)
+#   - Add support for Mac (For Omar)
+# * Super future: see how midjourney or DALL-E could be a cool integration with this tool.
+#   - The user could be given a prompt to generate a wallpaper.
+#   - Midjourney could provide 4 images that are presented by using the URL path provided?
+#   - If the user likes one and accepts it then its downloaded to the machine and saved in his folder.
+#   - If the user does not like the image then he could do another try to get 4 more images based on his last prompt.
+#   - The user can also quit and provide a new prompt if he desires to do so.
+#   - Must show a count of available midjourney prompts to the user so he knows at all times how 
+#       many times he can use this tool daily.
 
