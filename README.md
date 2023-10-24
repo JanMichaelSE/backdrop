@@ -24,7 +24,19 @@ cd backdrop
 ./install.sh
 ```
 
-<u>Note: Backdrop currently supports Bash and Zsh. Planning on supporting MacOS, CentOS and Fish in the future.</u>
+## &#x2705; What's Supported
+
+#### Operating Systems
+- Ubuntu based Distros
+- Coming Soon:
+    - MacOS
+    - CentOS/MATE
+#### Terminal Emulators 
+- Bash
+- Zsh
+- Coming Soon:
+    - Fish
+
 
 ## :package: Dependencies
 
