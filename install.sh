@@ -45,11 +45,11 @@ if [[ -f "$HOME/.bashrc" || -L "$HOME/.bashrc" ]]; then
    fi
 fi
 
-if [[ -f "$HOME/.config/config.fish" || -L "$HOME/.config/config.fish" ]]; then
-   if ! grep -q ".backdrop/bin" "$HOME/.config/config.fish"; then
+if [[ -f "$HOME/.config/fish/config.fish" || -L "$HOME/.config/fish/config.fish" ]]; then
+   if ! grep -q ".backdrop/bin" "$HOME/.config/fish/config.fish"; then
       echo ''
       echo "Backdrop not in config.fish, adding PATH."
-      append_backdrop_to_path ".config/config.fish"
+      append_backdrop_to_path ".config/fish/config.fish"
    fi
 fi
 
