@@ -240,6 +240,7 @@ exit 0
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
 # * Add support for the following platforms:
 #   - Add support for CentOS (Because thats what I use at work)
+#       - This should just be setting background and installation of fzf that changes.
 #   - Add support for Fish (Because it's cool)
 #   - Add support for Mac (For Omar)
 # * Super future: see how midjourney or DALL-E could be a cool integration with this tool.
