@@ -25,8 +25,8 @@ install_fzf_based_on_os() {
       sudo apt install fzf -y
    elif grep -qi 'centos' "/etc/os-release"; then
       # TODO: Need to test this tomorrow when I get to work.
-      sudo yum update -y
-      sudo yum install fzf -y
+      git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+      "$HOME/.fzf/install"
    else
      echo "Unsupported Distribution/Operating System." >&2
      echo "Could not install fzf for this system. Make sure this is installed before using 'backdrop -f' feature." >&2
