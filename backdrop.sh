@@ -38,8 +38,19 @@ select_image_path() {
 }
 
 set_wallpaper() {
-    gsettings set org.gnome.desktop.background picture-uri "$1"
-    gsettings set org.gnome.desktop.background picture-uri-dark "$1"
+    if echo $XDG_CURRENT_DESKTOP | grep -q "GNOME"; then
+       echo "Detected Gnome" 
+       gsettings set org.gnome.desktop.background picture-uri "$1"
+       gsettings set org.gnome.desktop.background picture-uri-dark "$1"
+    elif echo $XDG_CURRENT_DESKTOP | grep -q "MATE"; then
+       echo "Detected MATE" 
+       gsettings set org.mate.desktop.background picture-uri "$1"
+       gsettings set org.mate.desktop.background picture-uri-dark "$1"
+    elif echo $XDG_CURRENT_DESKTOP | grep -q "CINNAMON"; then
+       echo "Detected Cinnamon" 
+       gsettings set org.cinnamon.desktop.background picture-uri "$1"
+       gsettings set org.cinnamon.desktop.background picture-uri-dark "$1"
+    fi
     check_command_status "Changing background image"
 }
 
