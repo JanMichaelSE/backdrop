@@ -20,11 +20,24 @@ append_backdrop_to_path() {
    echo ''
 }
 
+install_fzf_based_on_os() {
+   if grep -qi 'ubuntu' "/etc/os-release"; then
+      sudo apt install fzf -y
+   elif grep -qi 'centos' "/etc/os-release"; then
+      # TODO: Need to test this tomorrow when I get to work.
+      git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+      "$HOME/.fzf/install"
+   else
+     echo "Unsupported Distribution/Operating System." >&2
+     echo "Could not install fzf for this system. Make sure this is installed before using 'backdrop -f' feature." >&2
+   fi
+}
+
 # Check if fzf is installed
 echo -e "\n<<< Checking if fzf is installed. >>>"
 if ! command -v "fzf" &> /dev/null; then
   echo "fzf is not installed. Installing..."
-  sudo apt install fzf -y
+  install_fzf_based_on_os
 else
   echo "fzf is already installed."
 fi
