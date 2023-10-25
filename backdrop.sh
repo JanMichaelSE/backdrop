@@ -41,18 +41,16 @@ get_previous_wallpaper() {
     if gsettings list-schemas | grep -iq mate.background; then
         echo $(gsettings get org.mate.background picture-filename)
     elif gsettings list-schemas | grep -iq gnome.desktop.background; then
-        echo $(gsettings get org.gnome.desktop.background picture-uri)
+        echo $(gsettings get org.gnome.desktop.background picture-uri | awk -F "://" '{print $2}' | sed "s/'//g")
     fi
 }
 
 set_wallpaper() {
     if gsettings list-schemas | grep -iq mate.background; then
-        echo "Detected MATE" 
         gsettings set org.mate.background picture-filename "$1"
     elif gsettings list-schemas | grep -iq gnome.desktop.background; then
-       echo "Detected Gnome" 
-       gsettings set org.gnome.desktop.background picture-uri "$1"
-       gsettings set org.gnome.desktop.background picture-uri-dark "$1"
+        gsettings set org.gnome.desktop.background picture-uri "file://$1"
+        gsettings set org.gnome.desktop.background picture-uri-dark "file://$1"
     fi
     check_command_status "Changing background image"
 }
@@ -169,11 +167,10 @@ fi
 if [[ $IS_FUZZY_FINDING = 'true' ]]; then
     while true; do
         PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-        echo "This is the old wallpaper: $PREVIOUS_WALLPAPER"
         SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
 
         if [[ -f "$SELECTED_PATH/$SELECTED_WALLPAPER" ]]; then
-            set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
+            set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
         else
             echo "No image selected, exiting..."
             break
@@ -213,10 +210,9 @@ else
            exit 0
         elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
             PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-            echo "This is the old wallpaper: $PREVIOUS_WALLPAPER"
             SELECTED_WALLPAPER=${WALLPAPERS_ARRAY[$REPLY-1]}
 
-            set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
+            set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
 
             while true; do
                 read -p "Want to save this change? [y/N]: " CHOICE
@@ -244,6 +240,7 @@ fi
 exit 0
 
 # Future Tasks:
+# * Add an update flag to update the software without having to uninstall and re-install.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
 # * See how a slide show implementation could fit here.
 # * Allow users to provide URL and set them as wallpapers.
@@ -255,8 +252,6 @@ exit 0
 #       For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
 # * Add support for the following platforms:
-#   - Add support for CentOS (Because thats what I use at work)
-#       - This should just be setting background and installation of fzf that changes.
 #   - Add support for Fish (Because it's cool)
 #   - Add support for Mac (For Omar)
 # * Super future: see how midjourney or DALL-E could be a cool integration with this tool.
