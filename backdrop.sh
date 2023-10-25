@@ -37,6 +37,14 @@ select_image_path() {
     WALLPAPERS=$(find -L "${1}" -maxdepth 1 -type f | awk -F '/' '{print $NF}')
 }
 
+get_previous_wallpaper() {
+    if gsettings list-schemas | grep -iq mate.background; then
+        echo $(gsettings get org.mate.background picture-filename)
+    elif gsettings list-schemas | grep -iq gnome.desktop.background; then
+        echo $(gsettings get org.gnome.desktop.background picture-uri)
+    fi
+}
+
 set_wallpaper() {
     if gsettings list-schemas | grep -iq mate.background; then
         echo "Detected MATE" 
@@ -160,7 +168,8 @@ fi
 # Get user selection
 if [[ $IS_FUZZY_FINDING = 'true' ]]; then
     while true; do
-        PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
+        PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
+        echo "This is the old wallpaper: $PREVIOUS_WALLPAPER"
         SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
 
         if [[ -f "$SELECTED_PATH/$SELECTED_WALLPAPER" ]]; then
@@ -203,7 +212,8 @@ else
            echo "Exiting backdrop..." 
            exit 0
         elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
-            PREVIOUS_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri)
+            PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
+            echo "This is the old wallpaper: $PREVIOUS_WALLPAPER"
             SELECTED_WALLPAPER=${WALLPAPERS_ARRAY[$REPLY-1]}
 
             set_wallpaper "file://$SELECTED_PATH/$SELECTED_WALLPAPER"
