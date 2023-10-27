@@ -12,6 +12,8 @@ usage() {
     echo '                       path will be used.'
     echo '  -f, --fuzzy          Performs a fuzzy finding (Requires fzf).'
     echo "  -h, --help           Displays help information on how to use the ${0} command, listing all"
+    echo '  -s, --slideshow      Will configure and set a custom slideshow of images you select with fzf.'
+    echo '                       To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.'
     echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
     echo ''
@@ -68,7 +70,6 @@ set_wallpaper() {
     if gsettings list-schemas | grep -iq mate.background; then
         gsettings set org.mate.background picture-filename "$1"
     elif gsettings list-schemas | grep -iq gnome.desktop.background; then
-        echo "Setting: $1"
         gsettings set org.gnome.desktop.background picture-uri "file://$1"
         gsettings set org.gnome.desktop.background picture-uri-dark "file://$1"
     fi
@@ -235,9 +236,9 @@ while true; do
             IS_FUZZY_FINDING=true
             ;;
         -s|--slideshow)
-            # Configure slide show here.
-            echo "Starting slideshow configuration"
             setup_slideshow
+            check_command_status "Setting Slideshow configuration"
+            echo "Successfully configure slideshow!"
             exit 0
             ;;
         --uninstall)
@@ -339,7 +340,6 @@ exit 0
 # Future Tasks:
 # * Add an update flag to update the software without having to uninstall and re-install.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
-# * See how a slide show implementation could fit here.
 # * Allow users to provide URL and set them as wallpapers.
 #   - This could mean we download the image and set it.
 #   - If the user does not like it then we erase the image from the folders.
