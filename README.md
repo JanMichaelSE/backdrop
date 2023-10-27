@@ -34,8 +34,7 @@ cd backdrop
 #### Terminal Emulators 
 - Bash
 - Zsh
-- Coming Soon:
-    - Fish
+- Fish
 
 
 ## :package: Dependencies
