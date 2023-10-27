@@ -11,6 +11,7 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 - Set a new wallpaper
 - Specify a custom path for wallpaper images
+- Set custom slideshow of images with your desired duration per slide.
 - Fuzzy finding of wallpapers (Requires fzf)
 - Uninstall Backdrop
 
@@ -27,10 +28,10 @@ cd backdrop
 ## &#x2705; What's Supported
 
 #### Operating Systems
-- Ubuntu based Distros
+- Ubuntu/GNOME based Distros
+- CentOS/MATE (Doesn't support Slideshows)
 - Coming Soon:
     - MacOS
-    - CentOS/MATE
 #### Terminal Emulators 
 - Bash
 - Zsh
@@ -48,6 +49,7 @@ Backdrop provides several options for managing your wallpapers:
 - `-p, --path <PATH>`: Set a custom path to find wallpaper images. If not provided, a default path will be used.
 - `-f, --fuzzy`: Performs a fuzzy finding (Requires fzf).
 - `-h, --help`: Displays help information on how to use the command, listing all available options.
+- `-s, --slideshow`: Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
 - `--uninstall`: Will uninstall Backdrop by removing all PATHs and Backdrop files.
 
 For example, to set a custom path for your wallpapers, you can use the `-p` or `--path` flag:
