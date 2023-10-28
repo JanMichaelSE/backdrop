@@ -188,13 +188,13 @@ setup_slideshow() {
       echo "    <from>$SELECTED_PATH/${WALLPAPERS_ARRAY[$index]}</from>" >> "$SLIDESHOW_CONFIG_FILE"
       echo "    <to>$SELECTED_PATH/${WALLPAPERS_ARRAY[$(($index + 1))]}</to>" >> "$SLIDESHOW_CONFIG_FILE"
       echo '  </transition>' >> "$SLIDESHOW_CONFIG_FILE"
-      echo '  <static>' >> "$SLIDESHOW_CONFIG_FILE"
-      echo "    <duration>${SLIDE_DURATION}.0</duration>" >> "$SLIDESHOW_CONFIG_FILE"
-      echo "    <file>$SELECTED_PATH/${WALLPAPERS_ARRAY[$(($index + 1))]}</file>" >> "$SLIDESHOW_CONFIG_FILE"
-      echo '  </static>' >> "$SLIDESHOW_CONFIG_FILE"
 
       # Break early from for loop
       if [[ $((index + 1)) -eq $TOTAL_LENGTH ]]; then
+          echo '  <static>' >> "$SLIDESHOW_CONFIG_FILE"
+          echo "    <duration>${SLIDE_DURATION}.0</duration>" >> "$SLIDESHOW_CONFIG_FILE"
+          echo "    <file>$SELECTED_PATH/${WALLPAPERS_ARRAY[$(($index + 1))]}</file>" >> "$SLIDESHOW_CONFIG_FILE"
+          echo '  </static>' >> "$SLIDESHOW_CONFIG_FILE"
           break 2
       fi
     done
