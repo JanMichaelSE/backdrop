@@ -47,11 +47,18 @@ Backdrop requires `fzf` for fuzzy finding of wallpapers. If `fzf` is not install
 
 Backdrop provides several options for managing your wallpapers:
 
-- `-p, --path <PATH>`: Set a custom path to find wallpaper images. If not provided, a default path will be used.
-- `-f, --fuzzy`: Performs a fuzzy finding (Requires fzf).
-- `-h, --help`: Displays help information on how to use the command, listing all available options.
-- `-s, --slideshow`: Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
-- `--uninstall`: Will uninstall Backdrop by removing all PATHs and Backdrop files.
+- `-p, --path <PATH>`: 
+    - Set a custom path to find wallpaper images. If not provided, a default path will be used.
+- `-f, --fuzzy`: 
+    - Performs a fuzzy finding (Requires fzf).
+- `-h, --help`: 
+    - Displays help information on how to use the command, listing all available options.
+- `-s, --slideshow`: 
+    - Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
+- `-u, --url`: 
+    - Provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
+- `--uninstall`: 
+    - Will uninstall Backdrop by removing all PATHs and Backdrop files.
 
 For example, to set a custom path for your wallpapers, you can use the `-p` or `--path` flag:
 
