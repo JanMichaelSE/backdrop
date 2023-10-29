@@ -60,9 +60,9 @@ select_image_path() {
 
 get_previous_wallpaper() {
     if gsettings list-schemas | grep -iq mate.background; then
-        echo $(gsettings get org.mate.background picture-filename)
+        echo "$(gsettings get org.mate.background picture-filename)"
     elif gsettings list-schemas | grep -iq gnome.desktop.background; then
-        echo $(gsettings get org.gnome.desktop.background picture-uri | awk -F "://" '{print $2}' | sed "s/'//g")
+        echo "$(gsettings get org.gnome.desktop.background picture-uri | awk -F "://" '{print $2}' | sed "s/'//g")"
     fi
 }
 
@@ -132,7 +132,7 @@ setup_slideshow() {
 
     local PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
     local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
-    IFS=$'\n' local WALLPAPERS_ARRAY=($SELECTED_WALLPAPERS)
+    IFS=$'\n' local WALLPAPERS_ARRAY=("$SELECTED_WALLPAPERS")
 
     # Exit if no wallpaper was selected.
     if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
@@ -158,18 +158,14 @@ setup_slideshow() {
     echo '<?xml version="1.0" encoding="UTF-8"?>' > "$SLIDESHOW_FILE"
     echo '<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">' >> "$SLIDESHOW_FILE"
     echo '<wallpapers>' >> "$SLIDESHOW_FILE"
-
-    for wallpaper in $WALLPAPERS_ARRAY; do
-        echo '  <wallpaper>' >> "$SLIDESHOW_FILE"
-        echo "    <name>Backdrop Slideshow</name>" >> "$SLIDESHOW_FILE"
-        echo "    <filename>$SLIDESHOW_CONFIG_FILE</filename>" >> "$SLIDESHOW_FILE"
-        echo '    <options>zoom</options>' >> "$SLIDESHOW_FILE"
-        echo '    <pcolor>#2c001e</pcolor>' >> "$SLIDESHOW_FILE"
-        echo '    <scolor>#2c001e</scolor>' >> "$SLIDESHOW_FILE"
-        echo '    <shade_type>solid</shade_type>' >> "$SLIDESHOW_FILE"
-        echo '  </wallpaper>' >> "$SLIDESHOW_FILE"
-    done
-
+    echo '  <wallpaper>' >> "$SLIDESHOW_FILE"
+    echo "    <name>Backdrop Slideshow</name>" >> "$SLIDESHOW_FILE"
+    echo "    <filename>$SLIDESHOW_CONFIG_FILE</filename>" >> "$SLIDESHOW_FILE"
+    echo '    <options>zoom</options>' >> "$SLIDESHOW_FILE"
+    echo '    <pcolor>#2c001e</pcolor>' >> "$SLIDESHOW_FILE"
+    echo '    <scolor>#2c001e</scolor>' >> "$SLIDESHOW_FILE"
+    echo '    <shade_type>solid</shade_type>' >> "$SLIDESHOW_FILE"
+    echo '  </wallpaper>' >> "$SLIDESHOW_FILE"
     echo '</wallpapers>' >> "$SLIDESHOW_FILE"
 
     # Create Second Xml file that holds Slideshow configuration
@@ -184,7 +180,7 @@ setup_slideshow() {
     echo '  </starttime>' >> "$SLIDESHOW_CONFIG_FILE"
 
     local TOTAL_LENGTH=$((${#WALLPAPERS_ARRAY[@]} - 1))
-    for index in ${!WALLPAPERS_ARRAY[@]}; do
+    for index in "${!WALLPAPERS_ARRAY[@]}"; do
       echo '  <static>' >> "$SLIDESHOW_CONFIG_FILE"
       echo "    <duration>${SLIDE_DURATION}.0</duration>" >> "$SLIDESHOW_CONFIG_FILE"
       echo "    <file>$SELECTED_PATH/${WALLPAPERS_ARRAY[$index]}</file>" >> "$SLIDESHOW_CONFIG_FILE"
@@ -355,7 +351,6 @@ exit 0
 #       For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
 # * Make prompt experience more pretty (Low priority but it's bound to happen)
 # * Add support for the following platforms:
-#   - Add support for Fish (Because it's cool)
 #   - Add support for Mac (For Omar)
 # * Super future: see how midjourney or DALL-E could be a cool integration with this tool.
 #   - The user could be given a prompt to generate a wallpaper.
