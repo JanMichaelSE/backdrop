@@ -134,6 +134,12 @@ setup_slideshow() {
     local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
     IFS=$'\n' local WALLPAPERS_ARRAY=($SELECTED_WALLPAPERS)
 
+    # Exit if no wallpaper was selected.
+    if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
+        echo "No image selected, exiting..."
+        exit 0
+    fi
+
     # Ask user for duration per slide
     read -p "What should be the duration per slide? (In Seconds): " SLIDE_DURATION
 
