@@ -10,9 +10,10 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 ## :star: Features
 
 - Set a new wallpaper
+- Set wallpapers with `fzf` (Requires `fzf`)
 - Specify a custom path for wallpaper images
 - Set custom slideshow of images with your desired duration per slide.
-- Fuzzy finding of wallpapers (Requires fzf)
+- Set wallpapers by providing a URL to an image.
 - Uninstall Backdrop
 
 ## :wrench: Installation

@@ -24,7 +24,6 @@ install_fzf_based_on_os() {
    if grep -qi 'ubuntu' "/etc/os-release"; then
       sudo apt install fzf -y
    elif grep -qi 'centos' "/etc/os-release"; then
-      # TODO: Need to test this tomorrow when I get to work.
       git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
       "$HOME/.fzf/install"
    else
