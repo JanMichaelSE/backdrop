@@ -18,6 +18,7 @@ usage() {
     echo '                       If confirmed, the image will be downloaded to the directory were all images are found '
     echo '                       (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous '
     echo '                       wallpaper is set.'
+    echo '  -v, --version        Print version information.'
     echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
     echo ''
