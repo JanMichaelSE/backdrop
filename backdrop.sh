@@ -267,7 +267,6 @@ setup_url_image() {
         check_command_status "Getting image from url"
 
         IMAGE_FROM_URL=$(ls "$URL_IMAGES_PATH")
-        echo "Wallpaper to set: $URL_IMAGES_PATH/$IMAGE_FROM_URL"
         set_wallpaper "$URL_IMAGES_PATH/$IMAGE_FROM_URL"
 
         while true; do
