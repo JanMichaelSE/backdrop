@@ -144,7 +144,7 @@ setup_slideshow() {
     read -p "What should be the duration per slide? (In Seconds): " SLIDE_DURATION
 
     # Create the slideshow folder if it doesn't exist
-    local SLIDESHOW_PATH="$HOME/.local/share/gnome-background-properties" 
+    local SLIDESHOW_PATH="$HOME/.local/share/gnome-background-properties"
     local SLIDESHOW_CONFIG_PATH="$HOME/.local/share/backgrounds/backdrop_settings"
     if [[ ! -d "$SLIDESHOW_PATH"  || ! -d "$SLIDESHOW_CONFIG_PATH" ]]; then
        mkdir -p "$SLIDESHOW_PATH"
@@ -208,7 +208,7 @@ setup_slideshow() {
     echo "    <to>$SELECTED_PATH/${WALLPAPERS_ARRAY[0]}</to>" >> "$SLIDESHOW_CONFIG_FILE"
     echo '  </transition>' >> "$SLIDESHOW_CONFIG_FILE"
     echo '</background>' >> "$SLIDESHOW_CONFIG_FILE"
-    
+
     set_wallpaper $SLIDESHOW_CONFIG_FILE
 }
 
@@ -291,7 +291,7 @@ if [[ $IS_FUZZY_FINDING = 'true' ]]; then
                     echo "Invalid input..."
                     ;;
             esac
-        done     
+        done
     done
 else
     # Convert wallpapers to an array so we can reference them by index
@@ -306,7 +306,7 @@ else
     while true; do
         read -p "Please select image background image (or press 'q' to quit): " REPLY
         if [[ $REPLY == 'q' ]]; then
-           echo "Exiting backdrop..." 
+           echo "Exiting backdrop..."
            exit 0
         elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
             PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
@@ -329,7 +329,7 @@ else
                         echo "Invalid input..."
                         ;;
                 esac
-            done     
+            done
         else
             echo "Invalid selection, please try again."
         fi
@@ -358,6 +358,6 @@ exit 0
 #   - If the user likes one and accepts it then its downloaded to the machine and saved in his folder.
 #   - If the user does not like the image then he could do another try to get 4 more images based on his last prompt.
 #   - The user can also quit and provide a new prompt if he desires to do so.
-#   - Must show a count of available midjourney prompts to the user so he knows at all times how 
+#   - Must show a count of available midjourney prompts to the user so he knows at all times how
 #       many times he can use this tool daily.
 
