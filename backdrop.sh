@@ -14,6 +14,10 @@ usage() {
     echo "  -h, --help           Displays help information on how to use the ${0} command, listing all"
     echo '  -s, --slideshow      Will configure and set a custom slideshow of images you select with fzf.'
     echo '                       To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.'
+    echo '  -u, --url            Provide an image url to be set as wallpaper. The image will be downloaded and previewed.'
+    echo '                       If confirmed, the image will be downloaded to the directory were all images are found '
+    echo '                       (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous '
+    echo '                       wallpaper is set.'
     echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
     echo ''
@@ -34,7 +38,7 @@ check_command_status() {
     fi
 }
 
-select_image_path() {
+expose_image_path_and_wallpapers() {
     local PICTURES_PATH="$HOME/Pictures/wallpapers"
     local CONFIGS_PATH="$HOME/.config/backdrop/wallpapers"
 
@@ -124,15 +128,45 @@ set_custom_path() {
     fi
 }
 
+setup_fzf_wallpaper() {
+    expose_image_path_and_wallpapers
+
+    while true; do
+        PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
+        SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
+
+        if [[ -f "$SELECTED_PATH/$SELECTED_WALLPAPER" ]]; then
+            set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
+        else
+            echo "No image selected, exiting..."
+            break
+        fi
+
+        while true; do
+            read -p "Want to save this change? [y/N]: " CHOICE
+            case "$CHOICE" in
+                [yY])
+                    echo "Successfully changed background image."
+                    break 2
+                    ;;
+                [nN]|"")
+                    set_wallpaper "$PREVIOUS_WALLPAPER"
+                    break
+                    ;;
+                *)
+                    echo "Invalid input..."
+                    ;;
+            esac
+        done
+    done
+}
+
 setup_slideshow() {
-    # Selects the Image path and EXPOSES:
-    # * SELECTED_PATH
-    # * SELECTED_WALLPAPER
-    select_image_path
+    expose_image_path_and_wallpapers
 
     local PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
     local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
-    IFS=$'\n' local WALLPAPERS_ARRAY=("$SELECTED_WALLPAPERS")
+    IFS=$'\n' local WALLPAPERS_ARRAY=($SELECTED_WALLPAPERS)
 
     # Exit if no wallpaper was selected.
     if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
@@ -188,14 +222,14 @@ setup_slideshow() {
       echo '  <transition>' >> "$SLIDESHOW_CONFIG_FILE"
       echo '    <duration>0.5</duration>' >> "$SLIDESHOW_CONFIG_FILE"
       echo "    <from>$SELECTED_PATH/${WALLPAPERS_ARRAY[$index]}</from>" >> "$SLIDESHOW_CONFIG_FILE"
-      echo "    <to>$SELECTED_PATH/${WALLPAPERS_ARRAY[$(($index + 1))]}</to>" >> "$SLIDESHOW_CONFIG_FILE"
+      echo "    <to>$SELECTED_PATH/${WALLPAPERS_ARRAY[$((index + 1))]}</to>" >> "$SLIDESHOW_CONFIG_FILE"
       echo '  </transition>' >> "$SLIDESHOW_CONFIG_FILE"
 
       # Break early from for loop
       if [[ $((index + 1)) -eq $TOTAL_LENGTH ]]; then
           echo '  <static>' >> "$SLIDESHOW_CONFIG_FILE"
           echo "    <duration>${SLIDE_DURATION}.0</duration>" >> "$SLIDESHOW_CONFIG_FILE"
-          echo "    <file>$SELECTED_PATH/${WALLPAPERS_ARRAY[$(($index + 1))]}</file>" >> "$SLIDESHOW_CONFIG_FILE"
+          echo "    <file>$SELECTED_PATH/${WALLPAPERS_ARRAY[$((index + 1))]}</file>" >> "$SLIDESHOW_CONFIG_FILE"
           echo '  </static>' >> "$SLIDESHOW_CONFIG_FILE"
           break 2
       fi
@@ -209,11 +243,58 @@ setup_slideshow() {
     echo '  </transition>' >> "$SLIDESHOW_CONFIG_FILE"
     echo '</background>' >> "$SLIDESHOW_CONFIG_FILE"
 
-    set_wallpaper $SLIDESHOW_CONFIG_FILE
+    set_wallpaper "$SLIDESHOW_CONFIG_FILE"
+}
+
+setup_url_image() {
+    expose_image_path_and_wallpapers
+
+    while true; do
+        PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
+
+        read -rp 'Provide Image Url: ' IMAGE_URL
+        if [[ $IMAGE_URL = '' ]]; then
+            echo "No value provided. Exiting..."
+            return
+        fi
+
+        local URL_IMAGES_PATH="$PWD/url_images"
+        if [[ ! -d "$URL_IMAGES_PATH" ]]; then
+            mkdir -p "$URL_IMAGES_PATH" 
+        fi
+
+        wget -nv -P "$URL_IMAGES_PATH" "$IMAGE_URL"
+        check_command_status "Getting image from url"
+
+        IMAGE_FROM_URL=$(ls "$URL_IMAGES_PATH")
+        echo "Wallpaper to set: $URL_IMAGES_PATH/$IMAGE_FROM_URL"
+        set_wallpaper "$URL_IMAGES_PATH/$IMAGE_FROM_URL"
+
+        while true; do
+            read -p "Want to save this change? [y/N]: " CHOICE
+            case "$CHOICE" in
+                [yY])
+                    mv $URL_IMAGES_PATH/* "$SELECTED_PATH"
+                    set_wallpaper "$SELECTED_PATH/$IMAGE_FROM_URL"
+                    rm -rf "$URL_IMAGES_PATH"
+                    echo "Successfully changed background image."
+                    return
+                    ;;
+                [nN]|"")
+                    set_wallpaper "$PREVIOUS_WALLPAPER"
+                    rm -rf "$URL_IMAGES_PATH"
+                    break
+                    ;;
+                *)
+                    echo "Invalid input..."
+                    ;;
+            esac
+        done
+    done
 }
 
 # This is how to read long and short options, the "--" is to know when we are done.
-OPTIONS=$(getopt -o p:fsh -l path:,fuzzy,slideshow,help,uninstall -- "$@")
+OPTIONS=$(getopt -o p:fsuh -l path:,fuzzy,slideshow,url,help,uninstall -- "$@")
 check_command_status "Getting command options"
 
 # Reorder the arguments to ensure they are correct
@@ -235,12 +316,20 @@ while true; do
             exit 0
             ;;
         -f|--fuzzy)
-            IS_FUZZY_FINDING=true
+            setup_fzf_wallpaper
+            check_command_status "Setting Wallpaper with fzf"
+            exit 0
             ;;
         -s|--slideshow)
             setup_slideshow
             check_command_status "Setting Slideshow configuration"
             echo "Successfully configure slideshow!"
+            exit 0
+            ;;
+        -u|--url)
+            setup_url_image
+            check_command_status "Setting Url Image"
+            echo "Successfully Setup Image from Url!"
             exit 0
             ;;
         --uninstall)
@@ -258,23 +347,28 @@ while true; do
     shift # Move to next option
 done
 
-# Selects the Image path and EXPOSES:
-# * SELECTED_PATH
-# * SELECTED_WALLPAPER
-select_image_path
 
-# Get user selection
-if [[ $IS_FUZZY_FINDING = 'true' ]]; then
-    while true; do
+
+# Convert wallpapers to an array so we can reference them by index
+expose_image_path_and_wallpapers
+IFS=$'\n' WALLPAPERS_ARRAY=($WALLPAPERS)
+
+# Display options to user
+i=1
+for wallpaper in "${WALLPAPERS_ARRAY[@]}"; do
+    echo "$i) $wallpaper"
+    ((i++))
+done
+while true; do
+    read -p "Please select image background image (or press 'q' to quit): " REPLY
+    if [[ $REPLY == 'q' ]]; then
+        echo "Exiting backdrop..."
+        exit 0
+    elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
         PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-        SELECTED_WALLPAPER=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse)
+        SELECTED_WALLPAPER=${WALLPAPERS_ARRAY[$REPLY-1]}
 
-        if [[ -f "$SELECTED_PATH/$SELECTED_WALLPAPER" ]]; then
-            set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
-        else
-            echo "No image selected, exiting..."
-            break
-        fi
+        set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
 
         while true; do
             read -p "Want to save this change? [y/N]: " CHOICE
@@ -292,49 +386,10 @@ if [[ $IS_FUZZY_FINDING = 'true' ]]; then
                     ;;
             esac
         done
-    done
-else
-    # Convert wallpapers to an array so we can reference them by index
-    IFS=$'\n' WALLPAPERS_ARRAY=($WALLPAPERS)
-
-    # Display options to user
-    i=1
-    for wallpaper in "${WALLPAPERS_ARRAY[@]}"; do
-        echo "$i) $wallpaper"
-        ((i++))
-    done
-    while true; do
-        read -p "Please select image background image (or press 'q' to quit): " REPLY
-        if [[ $REPLY == 'q' ]]; then
-           echo "Exiting backdrop..."
-           exit 0
-        elif (( REPLY > 0 && REPLY <= ${#WALLPAPERS_ARRAY[@]} )); then
-            PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-            SELECTED_WALLPAPER=${WALLPAPERS_ARRAY[$REPLY-1]}
-
-            set_wallpaper "$SELECTED_PATH/$SELECTED_WALLPAPER"
-
-            while true; do
-                read -p "Want to save this change? [y/N]: " CHOICE
-                case "$CHOICE" in
-                    [yY])
-                        echo "Successfully changed background image."
-                        break 2
-                        ;;
-                    [nN]|"")
-                        set_wallpaper "$PREVIOUS_WALLPAPER"
-                        break
-                        ;;
-                    *)
-                        echo "Invalid input..."
-                        ;;
-                esac
-            done
-        else
-            echo "Invalid selection, please try again."
-        fi
-    done
-fi
+    else
+        echo "Invalid selection, please try again."
+    fi
+done
 
 
 exit 0
@@ -342,10 +397,6 @@ exit 0
 # Future Tasks:
 # * Add an update flag to update the software without having to uninstall and re-install.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
-# * Allow users to provide URL and set them as wallpapers.
-#   - This could mean we download the image and set it.
-#   - If the user does not like it then we erase the image from the folders.
-#   - If he likes it then it stays on the folder.
 # * Need to see how to handle subfolders
 # * Need to see how to handle multiple valid directories
 #       For now just gonna give priority to ".config/backdrop/wallpapers" if exists.
