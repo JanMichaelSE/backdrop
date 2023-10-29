@@ -5,7 +5,7 @@
 [![Contributors Badge](https://img.shields.io/github/contributors/JanMichaelSE/backdrop)](https://github.com/JanMichaelSE/backdrop/graphs/contributors)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 
-Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored. 
+Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored.
 
 ## :star: Features
 
@@ -17,7 +17,7 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 ## :wrench: Installation
 
-The installation process is straightforward. Simply clone the repository and run the `install.sh` script. 
+The installation process is straightforward. Simply clone the repository and run the `install.sh` script.
 
 ```bash
 git clone https://github.com/JanMichaelSE/backdrop.git
@@ -32,7 +32,7 @@ cd backdrop
 - CentOS/MATE (Doesn't support Slideshows)
 - Coming Soon:
     - MacOS
-#### Terminal Emulators 
+#### Shells
 - Bash
 - Zsh
 - Fish
@@ -60,7 +60,7 @@ backdrop --path /path/to/your/wallpapers
 
 ## :busts_in_silhouette: Authors
 
-Backdrop is currently maintained by JanMichaelSE. 
+Backdrop is currently maintained by JanMichaelSE.
 
 ## :handshake: Contributing
 
@@ -72,7 +72,7 @@ Contributions are always welcome! If you'd like to contribute, please follow the
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-For any issues, please open an issue on GitHub. 
+For any issues, please open an issue on GitHub.
 
 ## :email: Support
 
