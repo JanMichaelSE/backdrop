@@ -293,7 +293,7 @@ setup_url_image() {
 }
 
 # This is how to read long and short options, the "--" is to know when we are done.
-OPTIONS=$(getopt -o p:fsuh -l path:,fuzzy,slideshow,url,help,uninstall -- "$@")
+OPTIONS=$(getopt -o p:fsuvh -l path:,fuzzy,slideshow,url,version,help,uninstall -- "$@")
 check_command_status "Getting command options"
 
 # Reorder the arguments to ensure they are correct
@@ -334,6 +334,11 @@ while true; do
         --uninstall)
             echo "Uninstalling Backdrop..."
             "$HOME/.backdrop/scripts/uninstall.sh"
+            exit 0
+            ;;
+        -v|--version)
+            VERSION="v0.0.1"
+            echo "Backdrop $VERSION"
             exit 0
             ;;
         -h|--help) usage;;
