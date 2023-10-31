@@ -13,7 +13,9 @@ usage() {
     echo '  -f, --fuzzy          Performs a fuzzy finding (Requires fzf).'
     echo "  -h, --help           Displays help information on how to use the ${0} command, listing all"
     echo '  -s, --slideshow      Will configure and set a custom slideshow of images you select with fzf.'
-    echo '                       To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.'
+    echo '                       To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to'
+    echo '                       confirm. Images used in slideshow MUST have a file extension, if not the slideshow will'
+    echo '                       not function as expected. Note: I am not sure if all extensions work.'
     echo '  -u, --url            Provide an image url to be set as wallpaper. The image will be downloaded and previewed.'
     echo '                       If confirmed, the image will be downloaded to the directory were all images are found '
     echo '                       (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous '
@@ -166,10 +168,18 @@ setup_slideshow() {
     expose_image_path_and_wallpapers
 
     local PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-    local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
+    local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | grep -E '\.[^.]+$' | fzf --layout=reverse --multi)
+    local WALLPAPERS_WITHOUT_EXTENSIONS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | grep -vE '\.[^.]+$')
+    echo "Without Extensions: $WALLPAPERS_WITHOUT_EXTENSIONS"
     IFS=$'\n' local WALLPAPERS_ARRAY=($SELECTED_WALLPAPERS)
 
     # Exit if no wallpaper was selected.
+    if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
+        echo "No image selected, exiting..."
+        exit 0
+    fi
+
+    # Show warning to user if Wallpapers don't have file extension
     if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
         echo "No image selected, exiting..."
         exit 0
