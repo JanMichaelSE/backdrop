@@ -14,8 +14,7 @@ usage() {
     echo "  -h, --help           Displays help information on how to use the ${0} command, listing all"
     echo '  -s, --slideshow      Will configure and set a custom slideshow of images you select with fzf.'
     echo '                       To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to'
-    echo '                       confirm. Images used in slideshow MUST have a file extension, if not the slideshow will'
-    echo '                       not function as expected. Note: I am not sure if all extensions work.'
+    echo '                       confirm.'
     echo '  -u, --url            Provide an image url to be set as wallpaper. The image will be downloaded and previewed.'
     echo '                       If confirmed, the image will be downloaded to the directory were all images are found '
     echo '                       (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous '
