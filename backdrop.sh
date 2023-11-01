@@ -168,19 +168,11 @@ setup_slideshow() {
     expose_image_path_and_wallpapers
 
     local PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
-    local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | grep -E '\.[^.]+$' | fzf --layout=reverse --multi)
-    local WALLPAPERS_WITHOUT_EXTENSIONS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | grep -vE '\.[^.]+$')
-    echo "Without Extensions: $WALLPAPERS_WITHOUT_EXTENSIONS"
-    IFS=$'\n' local WALLPAPERS_ARRAY=($SELECTED_WALLPAPERS)
+    local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
+    mapfile -t WALLPAPERS_ARRAY <<< "$SELECTED_WALLPAPERS"
 
     # Exit if no wallpaper was selected.
-    if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
-        echo "No image selected, exiting..."
-        exit 0
-    fi
-
-    # Show warning to user if Wallpapers don't have file extension
-    if [[ ${#WALLPAPERS_ARRAY[@]} -eq 0 ]]; then
+    if [[ -z "${WALLPAPERS_ARRAY[0]}" ]]; then
         echo "No image selected, exiting..."
         exit 0
     fi
