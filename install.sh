@@ -32,6 +32,33 @@ install_fzf_based_on_os() {
    fi
 }
 
+update_to_latest_version() {
+   local BACKDROP_VERSION=$(./backdrop.sh -v | awk '{print $2}')
+   local INSTALLED_VERSION=$(backdrop -v | awk '{print $2}')
+
+   if [ "$BACKDROP_VERSION" == "$INSTALLED_VERSION" ]; then
+      echo "You have the latest version of backdrop installed."
+   else
+      echo "A newer version of backdrop is available. Latest version: $BACKDROP_VERSION, installed version: $INSTALLED_VERSION"
+
+      read -p "Do you want to update to the latest version? (Y/n) " choice
+
+      case "$choice" in
+         n | N)
+            echo "Update cancelled."
+            ;;
+         y | Y | "")
+            echo "Updating to the latest version..."
+            cp -p "./backdrop.sh" "$HOME/.backdrop/bin/backdrop"
+            ;;
+         *)
+            echo "Invalid choice."
+            ;;
+      esac
+   fi
+
+}
+
 # Check if fzf is installed
 echo -e "\n<<< Checking if fzf is installed. >>>"
 if ! command -v "fzf" &> /dev/null; then
@@ -74,6 +101,8 @@ if [[ ! -d "$HOME/.backdrop" ]]; then
    echo "Successfully configured backdrop!"
 else
    echo "Backdrop already configured."
+   echo -e "\n<<< Verifying latest version >>>\n"
+   update_to_latest_version
 fi
 
 exit 0
