@@ -1,0 +1,57 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo ./install.sh -y
+
+      - name: Check if fzf is installed
+        run: |
+          if ! command -v fzf &> /dev/null; then
+            echo "fzf is not installed"
+            exit 1
+          fi
+
+      - name: Check backdrop path in shell configuration
+        run: |
+          if ! grep -q ".backdrop/bin" "$HOME/.bashrc"; then
+            echo "Backdrop path not found in .bashrc"
+            exit 1
+          fi
+          if [ -f "$HOME/.zshrc" ]; then
+            if ! grep -q ".backdrop/bin" "$HOME/.zshrc"; then
+              echo "Backdrop path not found in .zshrc"
+              exit 1
+            fi
+          fi
+          if [ -f "$HOME/.config/fish/config.fish" ]; then
+            if ! grep -q ".backdrop/bin" "$HOME/.config/fish/config.fish"; then
+              echo "Backdrop path not found in config.fish"
+              exit 1
+            fi
+          fi
+
+      - name: Check if backdrop directories and scripts are created
+        run: |
+          if [ ! -d "$HOME/.backdrop/bin" ] || [ ! -d "$HOME/.backdrop/scripts" ]; then
+            echo "Backdrop directories are not created"
+            exit 1
+          fi
+          if [ ! -f "$HOME/.backdrop/bin/backdrop" ] || [ ! -f "$HOME/.backdrop/scripts/uninstall.sh" ]; then
+            echo "Backdrop scripts are not copied"
+            exit 1
+          fi
+
