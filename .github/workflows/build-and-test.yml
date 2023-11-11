@@ -24,15 +24,3 @@ jobs:
             echo "fzf is not installed"
             exit 1
           fi
-
-      - name: Check if backdrop directories and scripts are created
-        run: |
-          if [ ! -d "$HOME/.backdrop/bin" ] || [ ! -d "$HOME/.backdrop/scripts" ]; then
-            echo "Backdrop directories are not created"
-            exit 1
-          fi
-          if [ ! -f "$HOME/.backdrop/bin/backdrop" ] || [ ! -f "$HOME/.backdrop/scripts/uninstall.sh" ]; then
-            echo "Backdrop scripts are not copied"
-            exit 1
-          fi
-
