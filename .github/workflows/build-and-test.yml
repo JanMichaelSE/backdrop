@@ -1,0 +1,26 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update
+          sudo ./install.sh -y
+
+      - name: Check if fzf is installed
+        run: |
+          if ! command -v fzf &> /dev/null; then
+            echo "fzf is not installed"
+            exit 1
+          fi

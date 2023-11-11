@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+VERSION="v0.0.1"
+
 usage() {
     echo "Usage: ${0} [-rh] [-p PATH]"
     echo 'DESCRIPTION'
@@ -294,8 +296,42 @@ setup_url_image() {
     done
 }
 
+
+verify_latest_version() {
+                str=$VERSION
+            IFS='v'
+            read -ra ADDR <<< "$str"
+             INSTALLED="${ADDR[1]}"
+    local LATEST="0.0.1"
+
+    if [ "$LATEST_VERSION" == "$INSTALLED_VERSION" ]; then
+        echo 'You have the latest version of backdrop installed.'
+    else
+      echo "A newer version of backdrop is available. Latest version: $BACKDROP_VERSION, installed version: $INSTALLED_VERSION"
+
+      read -p "Do you want to update to the latest version? (y/N) " choice
+
+      case "$choice" in
+          n | N | '')
+              echo "Update cancelled."
+              ;;
+          y | Y)
+              echo "Updating to the latest version..."
+              #copy backdrop.sh from github to "$HOME/.backdrop/bin/backdrop"
+              echo "Updating completed."
+              exit 0
+              ;;
+          *)
+              echo "Invalid choice."
+              ;;
+      esac
+    fi
+      
+exit 0
+}
+
 # This is how to read long and short options, the "--" is to know when we are done.
-OPTIONS=$(getopt -o p:fsuvh -l path:,fuzzy,slideshow,url,version,help,uninstall -- "$@")
+OPTIONS=$(getopt -o p:fsuvhU -l path:,fuzzy,slideshow,url,version,help,uninstall,update -- "$@")
 check_command_status "Getting command options"
 
 # Reorder the arguments to ensure they are correct
@@ -339,11 +375,14 @@ while true; do
             exit 0
             ;;
         -v|--version)
-            VERSION="v0.0.1"
             echo "Backdrop $VERSION"
             exit 0
             ;;
         -h|--help) usage;;
+        -U|--update)
+
+             verify_latest_version INSTALLED_VERSION
+            ;;
         --)
             shift # End of opitons
             break
