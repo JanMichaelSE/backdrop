@@ -74,7 +74,6 @@ if [[ ! -d "$HOME/.backdrop" ]]; then
    echo "Successfully configured backdrop!"
 else
    echo "Backdrop already configured."
-   echo -e "\n<<< Verifying latest version >>>\n"
 fi
 
 exit 0

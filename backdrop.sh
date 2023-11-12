@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION="v0.0.1"
+VERSION="v0.0.2-beta"
 
 usage() {
     echo "Usage: ${0} [-rh] [-p PATH]"
@@ -298,37 +298,37 @@ setup_url_image() {
 
 
 verify_latest_version() {
-                str=$VERSION
-            IFS='v'
-            read -ra ADDR <<< "$str"
-             INSTALLED="${ADDR[1]}"
-    local LATEST="0.0.1"
+    local INSTALLED_VERSION=$VERSION
+    local LATEST_VERSION=$(curl -s "https://api.github.com/repos/JanMichaelSE/backdrop/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
 
     if [ "$LATEST_VERSION" == "$INSTALLED_VERSION" ]; then
         echo 'You have the latest version of backdrop installed.'
     else
-      echo "A newer version of backdrop is available. Latest version: $BACKDROP_VERSION, installed version: $INSTALLED_VERSION"
+        echo "A newer version of backdrop is available. Latest version: $LATEST_VERSION, installed version: $INSTALLED_VERSION"
 
-      read -p "Do you want to update to the latest version? (y/N) " choice
+        read -p "Do you want to update to the latest version? (y/N) " choice
 
-      case "$choice" in
-          n | N | '')
-              echo "Update cancelled."
-              ;;
-          y | Y)
-              echo "Updating to the latest version..."
-              #copy backdrop.sh from github to "$HOME/.backdrop/bin/backdrop"
-              echo "Updating completed."
-              exit 0
-              ;;
-          *)
-              echo "Invalid choice."
-              ;;
-      esac
+        case "$choice" in
+            y | Y)
+                echo "Updating to the latest version..."
+                curl -Lo "$HOME/.backdrop/bin/backdrop" "https://raw.githubusercontent.com/JanMichaelSE/backdrop/main/backdrop.sh"
+                if [ $? -eq 0 ]; then
+                    chmod +x "$HOME/.backdrop/bin/backdrop"
+                    echo "Updating completed."
+                else
+                    echo "Failed to download the latest version."
+                fi
+                ;;
+            n | N | '')
+                echo "Update cancelled."
+                ;;
+            *)
+                echo "Invalid choice."
+                ;;
+        esac
     fi
-      
-exit 0
 }
+
 
 # This is how to read long and short options, the "--" is to know when we are done.
 OPTIONS=$(getopt -o p:fsuvhU -l path:,fuzzy,slideshow,url,version,help,uninstall,update -- "$@")
@@ -381,7 +381,8 @@ while true; do
         -h|--help) usage;;
         -U|--update)
 
-             verify_latest_version INSTALLED_VERSION
+             verify_latest_version
+             exit 0
             ;;
         --)
             shift # End of opitons
