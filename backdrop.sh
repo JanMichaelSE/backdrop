@@ -24,6 +24,8 @@ usage() {
     echo '  -v, --version        Print version information.'
     echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
+    echo '  -U, --update         Will check if there is a new release of the application and if so'
+    echo '                       you will be prompt if you wish to update the application.'
     echo ''
     echo 'IMAGES'
     echo '  Images must be stored in ONE of the following paths:'
@@ -315,6 +317,7 @@ verify_latest_version() {
                 if [ $? -eq 0 ]; then
                     chmod +x "$HOME/.backdrop/bin/backdrop"
                     echo "Updating completed."
+                    echo "Please refresh your terminal to use the latest version."
                 else
                     echo "Failed to download the latest version."
                 fi
@@ -441,7 +444,6 @@ done
 exit 0
 
 # Future Tasks:
-# * Add an update flag to update the software without having to uninstall and re-install.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
 # * Need to see how to handle subfolders
 # * Need to see how to handle multiple valid directories
