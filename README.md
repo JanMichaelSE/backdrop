@@ -18,8 +18,12 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 ## :wrench: Installation
 
-The installation process is straightforward. Simply clone the repository and run the `install.sh` script.
+The installation process is straightforward. You can install using curl as follows
 
+```bash
+curl -s https://raw.githubusercontent.com/JanMichaelSE/backdrop/main/install.sh | bash
+```
+Or you could clone the repository and install from there by doing the following
 ```bash
 git clone https://github.com/JanMichaelSE/backdrop.git
 cd backdrop
