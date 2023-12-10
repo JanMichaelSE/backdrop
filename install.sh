@@ -9,7 +9,7 @@ append_backdrop_to_path() {
    if [[ $CONFIG_FILE = '.zshrc' || $CONFIG_FILE = '.bashrc' ]]; then
       echo 'export PATH=$PATH:$HOME/.backdrop/bin' >> "$CONFIG_PATH"
    else
-      echo 'set -gx PATH $HOME/.backdrop/bin $PATH' >> "$CONFIG_PATH"
+      echo 'set -gx fish_user_paths $HOME/.backdrop/bin $fish_user_paths' >> "$CONFIG_PATH"
    fi
    echo '' >> "$CONFIG_PATH"
    echo "Completed Setup for $CONFIG_FILE"
