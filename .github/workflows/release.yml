@@ -1,0 +1,32 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'version update')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Version
+        id: extract_version
+        run: |
+          VERSION=$(grep 'VERSION=' backdrop.sh | cut -d '"' -f2)
+          echo "Extracted version is $VERSION"
+          echo "::set-output name=version::$VERSION"
+
+      - name: Create Release
+        id: create-new-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+

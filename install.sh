@@ -32,6 +32,18 @@ install_fzf_based_on_os() {
    fi
 }
 
+# Verify if system is WSL
+system_verification(){
+#Check if sysem is running in WSL
+if [[ $(grep microsoft /proc/version) ]];then
+   echo "WSL is not supported"
+   echo "Installation process will terminate..."
+   sleep 2
+   exit 1
+fi
+}
+
+system_verification
 # Check if fzf is installed
 echo -e "\n<<< Checking if fzf is installed. >>>"
 if ! command -v "fzf" &> /dev/null; then
@@ -72,8 +84,6 @@ if [[ ! -d "$HOME/.backdrop" ]]; then
    cp -p "./backdrop.sh" "$HOME/.backdrop/bin/backdrop"
    cp -p "./uninstall.sh" "$HOME/.backdrop/scripts/uninstall.sh"
    echo "Successfully configured backdrop!"
-else
-   echo "Backdrop already configured."
 fi
 
 exit 0

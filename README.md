@@ -33,6 +33,9 @@ cd backdrop
 - CentOS/MATE (Doesn't support Slideshows)
 - Coming Soon:
     - MacOS
+    - Microsoft
+- Will not be Supported:
+    - WSL
 #### Shells
 - Bash
 - Zsh

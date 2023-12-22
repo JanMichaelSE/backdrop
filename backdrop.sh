@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+VERSION="v0.0.2-beta"
+
 usage() {
     echo "Usage: ${0} [-rh] [-p PATH]"
     echo 'DESCRIPTION'
@@ -22,6 +24,8 @@ usage() {
     echo '  -v, --version        Print version information.'
     echo '  --uninstall          Will uninstall Backdrop by removing all PATHs and Backdrop files.'
     echo '                       available options.'
+    echo '  -U, --update         Will check if there is a new release of the application and if so'
+    echo '                       you will be prompt if you wish to update the application.'
     echo ''
     echo 'IMAGES'
     echo '  Images must be stored in ONE of the following paths:'
@@ -294,8 +298,43 @@ setup_url_image() {
     done
 }
 
+
+verify_latest_version() {
+    local INSTALLED_VERSION=$VERSION
+    local LATEST_VERSION=$(curl -s "https://api.github.com/repos/JanMichaelSE/backdrop/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+
+    if [ "$LATEST_VERSION" == "$INSTALLED_VERSION" ]; then
+        echo 'You have the latest version of backdrop installed.'
+    else
+        echo "A newer version of backdrop is available. Latest version: $LATEST_VERSION, installed version: $INSTALLED_VERSION"
+
+        read -p "Do you want to update to the latest version? (y/N) " choice
+
+        case "$choice" in
+            y | Y)
+                echo "Updating to the latest version..."
+                curl -Lo "$HOME/.backdrop/bin/backdrop" "https://raw.githubusercontent.com/JanMichaelSE/backdrop/main/backdrop.sh"
+                if [ $? -eq 0 ]; then
+                    chmod +x "$HOME/.backdrop/bin/backdrop"
+                    echo "Updating completed."
+                    echo "Please refresh your terminal to use the latest version."
+                else
+                    echo "Failed to download the latest version."
+                fi
+                ;;
+            n | N | '')
+                echo "Update cancelled."
+                ;;
+            *)
+                echo "Invalid choice."
+                ;;
+        esac
+    fi
+}
+
+
 # This is how to read long and short options, the "--" is to know when we are done.
-OPTIONS=$(getopt -o p:fsuvh -l path:,fuzzy,slideshow,url,version,help,uninstall -- "$@")
+OPTIONS=$(getopt -o p:fsuvhU -l path:,fuzzy,slideshow,url,version,help,uninstall,update -- "$@")
 check_command_status "Getting command options"
 
 # Reorder the arguments to ensure they are correct
@@ -339,11 +378,15 @@ while true; do
             exit 0
             ;;
         -v|--version)
-            VERSION="v0.0.1"
             echo "Backdrop $VERSION"
             exit 0
             ;;
         -h|--help) usage;;
+        -U|--update)
+
+             verify_latest_version
+             exit 0
+            ;;
         --)
             shift # End of opitons
             break
@@ -401,7 +444,6 @@ done
 exit 0
 
 # Future Tasks:
-# * Add an update flag to update the software without having to uninstall and re-install.
 # * Provide flags to revert the last image selected "--revert or -r" (Optional, still thinking it's use)
 # * Need to see how to handle subfolders
 # * Need to see how to handle multiple valid directories
