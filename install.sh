@@ -77,13 +77,19 @@ if [[ -f "$HOME/.config/fish/config.fish" || -L "$HOME/.config/fish/config.fish"
    fi
 fi
 
-if [[ ! -d "$HOME/.backdrop" ]]; then
+if [[ ! -d "$HOME/.backdrop" ]]; then 
    echo "Configuring '.backdrop/' at $HOME dir."
    mkdir -p "$HOME/.backdrop/bin"
    mkdir -p "$HOME/.backdrop/scripts"
-   cp -p "./backdrop.sh" "$HOME/.backdrop/bin/backdrop"
-   cp -p "./uninstall.sh" "$HOME/.backdrop/scripts/uninstall.sh"
+   if [[ -f ./backdrop.sh ]]; then
+      cp -p "./backdrop.sh" "$HOME/.backdrop/bin/backdrop"
+      cp -p "./uninstall.sh" "$HOME/.backdrop/scripts/uninstall.sh"
    echo "Successfully configured backdrop!"
+   else 
+      curl -Lso "$HOME/.backdrop/bin/backdrop" "https://raw.githubusercontent.com/JanMichaelSE/backdrop/main/backdrop.sh" && chmod +x "$HOME/.backdrop/bin/backdrop"
+      curl -Lso "$HOME/.backdrop/scripts/uninstall.sh" "https://raw.githubusercontent.com/JanMichaelSE/backdrop/main/uninstall.sh" && chmod +x "$HOME/.backdrop/scripts/uninstall.sh"
+   echo "Successfully configured backdrop!"
+   fi
 fi
 
 exit 0
