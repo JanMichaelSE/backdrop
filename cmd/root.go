@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/janmichaelse/backdrop/internal"
@@ -42,18 +41,22 @@ and specify the directory where your wallpaper images are stored.`,
 
 		path, err := cmd.Flags().GetString("path")
 		if err != nil {
+			cmd.Usage()
 			return err
 		}
 		imageUrl, err := cmd.Flags().GetString("url")
 		if err != nil {
+			cmd.Usage()
 			return err
 		}
 		isFuzzy, err := cmd.Flags().GetBool("fuzzy")
 		if err != nil {
+			cmd.Usage()
 			return err
 		}
 		isSlideShow, err := cmd.Flags().GetBool("slideshow")
 		if err != nil {
+			cmd.Usage()
 			return err
 		}
 
