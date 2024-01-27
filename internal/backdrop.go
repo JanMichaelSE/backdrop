@@ -2,21 +2,14 @@ package internal
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/viper"
-)
-
-var (
-	ErrNoValidImagesPath              = errors.New("User does not have valid images path configured.")
-	ErrNoCompatibleDesktopEnvironment = errors.New("No compatible desktop environment found.")
+	"github.com/ktr0731/go-fuzzyfinder"
 )
 
 type Config struct {
@@ -41,10 +34,7 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 		return err
 	}
 
-	fmt.Println("Wallpaper path:", wallpapersPath)
-
 	wallpapers := getWallpapers(wallpapersPath)
-	fmt.Println("Wallpapers:", wallpapers)
 
 outter:
 	for {
@@ -52,12 +42,10 @@ outter:
 		if err != nil {
 			return err
 		}
-		fmt.Println("Previous wallpaper:", previousWallpaper)
 
 		var selectedWallpaper string
 		if config.isFuzzy {
-			fmt.Println("Selected search")
-			selectedWallpaper, err = useFZF(wallpapers, out)
+			selectedWallpaper, err = fuzzySelection(wallpapers)
 			if err != nil {
 				return err
 			}
@@ -65,9 +53,13 @@ outter:
 
 		fullSelectedPath := filepath.Join(wallpapersPath, selectedWallpaper)
 		if stats, err := os.Stat(fullSelectedPath); err == nil && stats.Mode().IsRegular() {
-			setWallpaper(fullSelectedPath)
+			err := setWallpaper(fullSelectedPath)
+			if err != nil {
+				return err
+			}
 		}
 
+	inner:
 		for {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Print("Want to save this change? [y/N]: ")
@@ -84,7 +76,10 @@ outter:
 				break outter
 			case "n":
 				setWallpaper(previousWallpaper)
-				break
+				if err != nil {
+					return err
+				}
+				break inner
 			default:
 				fmt.Println("Invalid input...")
 			}
@@ -93,143 +88,28 @@ outter:
 	}
 
 	// TODO: Still not sure what to return here.
+	// To a certain point I feel it's gonna stay 'nil'
 	return nil
 }
 
-// TODO: WHERE I LEFT OFF
-// - Currently FZF implementation is more complex than I expected,
-// but this could be an opportunity to get rid of this dependency and provide
-// an alternative way to select an image that is easy to use and maintain.
-// - Need to research above options.
-func useFZF(fileNames []string, out io.Writer) (string, error) {
-	cmd := exec.Command("fzf", "--layout=reverse")
-	cmd.Stdin = strings.NewReader(strings.Join(fileNames, "\n"))
-	cmd.Stdout = out
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+// TODO: Have fuzzy finding at the top
+//   - For the time being keep at bottom,
+//     need to see if either I can contribute to the package to support this.
+//   - Or investigate alternative solutions and see if BubbleTea LipGloss Go packages support this.
+func fuzzySelection(fileNames []string) (string, error) {
+	selectedIndex, err := fuzzyfinder.Find(
+		fileNames,
+		func(i int) string {
+			return fileNames[i]
+		},
+		fuzzyfinder.WithCursorPosition(1),
+	)
+	if errors.Is(err, fuzzyfinder.ErrAbort) {
+		return "", ErrUserCanceledSelection
+	}
 	if err != nil {
 		return "", err
 	}
 
-	return "", nil
-}
-
-func getUserImagesPath() (string, error) {
-	homePath, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	wallpapersPath, ok := viper.Get("WallpapersPath").(string)
-	if ok {
-		if stat, err := os.Stat(wallpapersPath); err == nil && stat.IsDir() {
-			return wallpapersPath, nil
-		}
-	}
-
-	configPath := fmt.Sprintf("%v/.config/backdrop/wallpapers", homePath)
-	if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
-		return configPath, nil
-	}
-
-	picturesPath := fmt.Sprintf("%v/Pictures/wallpapers", homePath)
-	if stat, err := os.Stat(picturesPath); err == nil && stat.IsDir() {
-		return picturesPath, nil
-	}
-
-	// TODO: Might want to see how to make this become a good message for the user
-	return "", ErrNoValidImagesPath
-}
-
-func getWallpapers(path string) []string {
-	fileEntries, _ := os.ReadDir(path)
-
-	files := make([]string, 0, len(fileEntries))
-	for _, file := range fileEntries {
-		files = append(files, file.Name())
-	}
-
-	return files
-}
-
-func getPreviousWallpaper() (string, error) {
-	cmdSettings := exec.Command("gsettings", "list-schemas")
-	var outSettings bytes.Buffer
-	cmdSettings.Stdout = &outSettings
-	if err := cmdSettings.Run(); err != nil {
-		return "", err
-	}
-
-	if strings.Contains(outSettings.String(), "gnome.desktop.background") {
-		cmdGetGnome := exec.Command("gsettings", "get", "org.gnome.desktop.background", "picture-uri")
-		var outGetGnome bytes.Buffer
-		cmdGetGnome.Stdout = &outGetGnome
-		err := cmdGetGnome.Run()
-		if err != nil {
-			return "", err
-		}
-
-		uri := strings.Trim(outGetGnome.String(), "\n")
-		if strings.Contains(uri, "://") {
-			parts := strings.SplitN(uri, "://", 2)
-			if len(parts) == 2 {
-				return parts[1], nil
-			}
-		}
-
-		return uri, nil
-	}
-
-	if strings.Contains(outSettings.String(), "mate.desktop.background") {
-		cmdGetMate := exec.Command("gsettings", "get", "org.mate.desktop.background", "picture-uri")
-		var outGetMate bytes.Buffer
-		cmdGetMate.Stdout = &outGetMate
-		err := cmdGetMate.Run()
-		if err != nil {
-			return "", err
-		}
-
-		uri := strings.Trim(outGetMate.String(), "\n")
-		if strings.Contains(uri, "://") {
-			parts := strings.SplitN(uri, "://", 2)
-			if len(parts) == 2 {
-				return parts[1], nil
-			}
-		}
-
-		return uri, nil
-	}
-
-	return "", ErrNoCompatibleDesktopEnvironment
-}
-
-func setWallpaper(wallpaper string) error {
-	cmdSettings := exec.Command("gsettings", "list-schemas")
-	var outSettings bytes.Buffer
-	cmdSettings.Stdout = &outSettings
-	if err := cmdSettings.Run(); err != nil {
-		return err
-	}
-
-	if strings.Contains(outSettings.String(), "gnome.desktop.background") {
-		cmdGetGnome := exec.Command("gsettings", "set", "org.gnome.desktop.background", "picture-uri", wallpaper)
-		err := cmdGetGnome.Run()
-		if err != nil {
-			// TODO: NEED TO BETTER HANDLE THIS ERROR
-			return err
-		}
-	}
-
-	if strings.Contains(outSettings.String(), "mate.desktop.background") {
-		cmdGetGnome := exec.Command("gsettings", "set", "org.mate.desktop.background", "picture-uri", wallpaper)
-		err := cmdGetGnome.Run()
-		if err != nil {
-			// TODO: NEED TO BETTER HANDLE THIS ERROR
-			return err
-		}
-	}
-
-	// TODO: Might want to see how to make this become a good message for the user
-	return ErrNoCompatibleDesktopEnvironment
+	return fileNames[selectedIndex], nil
 }

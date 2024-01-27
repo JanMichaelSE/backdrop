@@ -37,6 +37,7 @@ var rootCmd = &cobra.Command{
 	Long: `backdrop is a command-line utility for managing wallpapers on your desktop.
 It allows you to set a new wallpaper, revert to a previous wallpaper, 
 and specify the directory where your wallpaper images are stored.`,
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		path, err := cmd.Flags().GetString("path")
@@ -79,7 +80,7 @@ func init() {
 
 	// TODO: Might create subcommands down the line. (Revisit design later)
 	rootCmd.Flags().StringP("path", "p", "", "Set a custom path to find wallpaper images. If not provided, a default path will be used.")
-	rootCmd.Flags().BoolP("fuzzy", "f", false, "Performs a fuzzy finding (Requires fzf).")
+	rootCmd.Flags().BoolP("fuzzy", "f", false, "Performs a fuzzy finding.")
 	rootCmd.Flags().BoolP("slideshow", "s", false, "Will configure and set a custom slideshow of images you select with fzf.\nTo select multiple images hit 'Tab' on the images you desire to select, then hit 'Enter' to confirm.")
 	rootCmd.Flags().StringP("url", "u", "", `Provide an image url to be set as wallpaper. The image will be downloaded and previewed. 
     If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, 
@@ -106,6 +107,8 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		// TODO: Discuss with lenny if we want this printed out.
+		// I feel it ruins the tools user experience.
+		// fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }
