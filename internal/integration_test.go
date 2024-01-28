@@ -19,6 +19,10 @@ func TestIntegration(t *testing.T) {
 	testFile, cleanup := setupTempImage(t)
 	defer cleanup()
 
+	// TODO:
+	// - Need to see how to incorporate other flags and how they will be tests.
+	// Might need to break out into different sub tests and not just test cases.
+	// As the things I want to compare change per tests a lot.
 	testCases := []struct {
 		name               string
 		input              string
