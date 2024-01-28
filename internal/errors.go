@@ -4,10 +4,11 @@ import "errors"
 
 // TODO: Might later move to a errors.go
 var (
-	ErrNoCompatibleDesktopEnvironment = errors.New("No compatible desktop environment found for setting wallpaper.")
-	ErrUserCanceledSelection          = errors.New("User canceled selection, exiting program.")
-	ErrCouldNotSetBackground          = errors.New("Error setting background wallpaper.")
-	ErrCouldNotListSchemas            = errors.New("Error listing schemas.")
+	ErrNoCompatibleDesktopEnvironment = errors.New("No compatible desktop environment found for setting wallpaper")
+	ErrUserCanceledSelection          = errors.New("User canceled selection, exiting program")
+	ErrCouldNotSetBackground          = errors.New("Error setting background wallpaper")
+	ErrCouldNotListSchemas            = errors.New("Error listing schemas")
+	ErrCouldNotConfigureImagePath     = errors.New("Error trying to configure user image path")
 	ErrNoValidImagesPath              = errors.New(`User does not have valid images path configured.
     IMAGES
       Images must be stored in ONE of the following paths:

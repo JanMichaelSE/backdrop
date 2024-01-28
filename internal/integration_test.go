@@ -2,12 +2,22 @@ package internal
 
 import (
 	"bytes"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
+
+type testConfig struct {
+	input              string
+	config             *Config
+	expOutput          string
+	expError           error
+	imageSelectionStub ImageSelection
+}
 
 func TestIntegration(t *testing.T) {
 	initialWallpaper, err := getPreviousWallpaper()
@@ -16,75 +26,106 @@ func TestIntegration(t *testing.T) {
 	}
 	defer setWallpaper(initialWallpaper)
 
-	testFile, cleanup := setupTempImage(t)
-	defer cleanup()
+	testFile, cleanupTempImageFile := setupTempImageFile(t)
+	defer cleanupTempImageFile()
 
-	// TODO:
-	// - Need to see how to incorporate other flags and how they will be tests.
-	// Might need to break out into different sub tests and not just test cases.
-	// As the things I want to compare change per tests a lot.
-	testCases := []struct {
-		name               string
-		input              string
-		config             *Config
-		expOutput          string
-		expError           error
-		imageSelectionStub ImageSelection
-	}{
-		{
-			name:               "SuccessSetWallPaper",
+	cleanupCustomPath := cleanupCustomPathTest(t)
+	defer cleanupCustomPath()
+
+	t.Run("SuccessSetWallpaper", func(t *testing.T) {
+		testCase := testConfig{
 			config:             NewConfig("", "", false, false),
 			input:              "y\n",
 			expOutput:          "Successfully changed background image!",
 			expError:           nil,
 			imageSelectionStub: func(s []string) (string, error) { return testFile, nil },
-		},
-	}
+		}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			var out bytes.Buffer
-			var err error
+		var out bytes.Buffer
+		imageSelection = testCase.imageSelectionStub
+		input = strings.NewReader(testCase.input)
 
-			imageSelection = tc.imageSelectionStub
-			input = strings.NewReader(tc.input)
-			err = BackdropAction(&out, tc.config, []string{})
-			if tc.expError != nil {
-				if err == nil {
-					t.Error("Expected an error, but got 'nil' instead")
-				}
+		err := BackdropAction(&out, testCase.config, []string{})
+		if err != nil {
+			t.Errorf("Expected NO error, but got '%v' instead", err)
+		}
 
-				if !errors.Is(err, tc.expError) {
-					t.Errorf("Expected error '%v', but got '%v' instead", tc.expError, err)
-				}
-			}
+		if !strings.Contains(out.String(), testCase.expOutput) {
+			t.Errorf("Expected output '%v', but got '%v' instead", testCase.expOutput, out.String())
+		}
+	})
 
-			if err != nil {
-				t.Errorf("Expected NO error, but got '%v' instead", err)
-			}
+	t.Run("SuccessConfigurePath", func(t *testing.T) {
+		testCase := testConfig{
+			config:             NewConfig("../test/testData", "", false, false),
+			input:              "y\n",
+			expOutput:          "Successfully changed background image!",
+			expError:           nil,
+			imageSelectionStub: func(s []string) (string, error) { return "testImage.png", nil },
+		}
 
-			if !strings.Contains(out.String(), tc.expOutput) {
-				t.Errorf("Expected output '%v', but got '%v' instead", tc.expOutput, out.String())
-			}
+		var out bytes.Buffer
+		imageSelection = testCase.imageSelectionStub
+		input = strings.NewReader(testCase.input)
 
-		})
-	}
+		err := BackdropAction(&out, testCase.config, []string{})
+		if err != nil {
+			t.Errorf("Expected NO error, but got '%v' instead", err)
+		}
+
+		imagePath, err := getUserImagesPath()
+		if err != nil {
+			t.Errorf("Expected NO error, but got '%v' instead", err)
+		}
+
+		fmt.Println("IMAGE PATH DURING TEST:", imagePath)
+		if !strings.Contains(imagePath, testCase.config.path) {
+			t.Errorf("Expected image path '%v', got image path '%v'", testCase.config.path, imagePath)
+		}
+
+		if !strings.Contains(out.String(), testCase.expOutput) {
+			t.Errorf("Expected output '%v', but got '%v' instead", testCase.expOutput, out.String())
+		}
+	})
 }
 
-func setupTempImage(t *testing.T) (string, func()) {
+func setupTempImageFile(t *testing.T) (string, func()) {
 	t.Helper()
 
 	wallpapersPath, err := getUserImagesPath()
 	if err != nil {
-		t.Fatalf("Error getting userpath in setup function: %v", err)
+		t.Fatalf("Error getting userpath in test setup: %v", err)
 	}
 
 	file, err := os.CreateTemp(wallpapersPath, "backdropTestFile")
 	if err != nil {
-		t.Fatalf("Error creating temp file for setup function: %v", err)
+		t.Fatalf("Error creating temp file for test setup: %v", err)
 	}
 
 	return file.Name(), func() {
 		os.Remove(file.Name())
+	}
+}
+
+func cleanupCustomPathTest(t *testing.T) func() {
+	t.Helper()
+
+	originalCustomImagePath, ok := viper.Get("WallpapersPath").(string)
+
+	return func() {
+		if ok {
+			err := configureImagePath(originalCustomImagePath)
+			if err != nil {
+				t.Fatalf("Error during CustomPathTest cleanup, couldn't set original configureImagePath: '%v'", err)
+			}
+		} else {
+			homePath, err := os.UserHomeDir()
+			if err != nil {
+				t.Fatalf("Error during CustomPathTest cleanup, could'nt get user home directory: '%v'", err)
+			}
+
+			configPath := filepath.Join(homePath, ".backdrop.yaml")
+			os.Remove(configPath)
+		}
 	}
 }

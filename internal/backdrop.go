@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	path        string
-	imageUrl    string
+	path     string
+	imageUrl string
+	// TODO: Make Fuzzy finding the default
 	isFuzzy     bool
 	isSlideShow bool
 }
@@ -29,6 +30,13 @@ var (
 )
 
 func BackdropAction(out io.Writer, config *Config, args []string) error {
+	if config.path != "" {
+		err := configureImagePath(config.path)
+		if err != nil {
+			return err
+		}
+	}
+
 	wallpapersPath, err := getUserImagesPath()
 	if err != nil {
 		return err

@@ -5,10 +5,25 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
 )
+
+func configureImagePath(path string) error {
+	homePath, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	viper.Set("WallpapersPath", path)
+	configPath := filepath.Join(homePath, ".backdrop.yaml")
+	if err := viper.WriteConfigAs(configPath); err != nil {
+		return fmt.Errorf("%w : %v", ErrCouldNotConfigureImagePath, err)
+	}
+	return nil
+}
 
 func getUserImagesPath() (string, error) {
 	homePath, err := os.UserHomeDir()
