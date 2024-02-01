@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper>
+    <name>Backdrop Slideshow</name>
+     <filename>/home/mike/.local/share/backgrounds/backdrop_settings/backdrop_settings.xml</filename>
+    <options>zoom</options>
+    <pcolor>#2c001e</pcolor>
+    <scolor>#2c001e</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+</wallpapers>

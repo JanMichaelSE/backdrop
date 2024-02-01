@@ -170,7 +170,6 @@ setup_fzf_wallpaper() {
 setup_slideshow() {
     expose_image_path_and_wallpapers
 
-    local PREVIOUS_WALLPAPER=$(get_previous_wallpaper)
     local SELECTED_WALLPAPERS=$(find -L "$SELECTED_PATH" -maxdepth 1 -type f | awk -F '/' '{print $NF}' | fzf --layout=reverse --multi)
     mapfile -t WALLPAPERS_ARRAY <<< "$SELECTED_WALLPAPERS"
 

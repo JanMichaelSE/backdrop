@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func configureImagePath(path string) error {
+func configureWallpaperPath(path string) error {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func configureImagePath(path string) error {
 	return nil
 }
 
-func getUserImagesPath() (string, error) {
+func getUserWallpapersPath() (string, error) {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return "", err

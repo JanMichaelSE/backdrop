@@ -81,7 +81,6 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.backdrop.yaml)")
 
-	// TODO: Might create subcommands down the line. (Revisit design later)
 	rootCmd.Flags().StringP("path", "p", "", "Set a custom path to find wallpaper images. If not provided, a default path will be used.")
 	rootCmd.Flags().BoolP("fuzzy", "f", false, "Performs a fuzzy finding.")
 	rootCmd.Flags().BoolP("slideshow", "s", false, "Will configure and set a custom slideshow of images you select with fzf.\nTo select multiple images hit 'Tab' on the images you desire to select, then hit 'Enter' to confirm.")

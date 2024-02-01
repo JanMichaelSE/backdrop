@@ -25,29 +25,25 @@ func NewConfig(path, imageUrl string, isFuzzy, isSlideShow bool) *Config {
 }
 
 var (
-	imageSelection ImageSelection
-	input          io.Reader = os.Stdin
+	getSelector       GetImageSelector = getImageSelector
+	inputConfirmation io.Reader        = os.Stdin
+	inputDuration     io.Reader        = os.Stdin
 )
 
 func BackdropAction(out io.Writer, config *Config, args []string) error {
 	if config.path != "" {
-		err := configureImagePath(config.path)
+		err := configureWallpaperPath(config.path)
 		if err != nil {
 			return err
 		}
 	}
 
-	wallpapersPath, err := getUserImagesPath()
+	wallpapersPath, err := getUserWallpapersPath()
 	if err != nil {
 		return err
 	}
 
 	wallpapers := getWallpapers(wallpapersPath)
-
-	switch {
-	case config.isFuzzy:
-		imageSelection = fuzzySelection
-	}
 
 outter:
 	for {
@@ -56,14 +52,39 @@ outter:
 			return err
 		}
 
+		imageSelection := getSelector(config)
 		selectedWallpaper, err := imageSelection(wallpapers)
 		if err != nil {
 			return err
 		}
 
-		fullSelectedPath := filepath.Join(wallpapersPath, selectedWallpaper)
-		if stats, err := os.Stat(fullSelectedPath); err == nil && stats.Mode().IsRegular() {
-			err := setWallpaper(fullSelectedPath)
+		if config.isSlideShow {
+			duration, err := userDuration(inputDuration)
+			if err != nil {
+				return err
+			}
+
+			selectedWallpaper, err = configureSlideShow(selectedWallpaper, wallpapersPath, duration)
+			if err != nil {
+				return err
+			}
+
+			err = setWallpaper(selectedWallpaper)
+			if err != nil {
+				return err
+			}
+		}
+
+		if selectedWallpaper[0] != '/' {
+			fmt.Println("I did not happen")
+			fullSelectedPath := filepath.Join(wallpapersPath, selectedWallpaper)
+			stats, err := os.Stat(fullSelectedPath)
+			if err == nil && stats.Mode().IsRegular() {
+				err := setWallpaper(fullSelectedPath)
+				if err != nil {
+					return err
+				}
+			}
 			if err != nil {
 				return err
 			}
@@ -71,7 +92,7 @@ outter:
 
 	inner:
 		for {
-			userInput, err := userConfirmation(input)
+			userInput, err := userConfirmation(inputConfirmation)
 			if err != nil {
 				return err
 			}
@@ -93,7 +114,5 @@ outter:
 
 	}
 
-	// TODO: Still not sure what to return here.
-	// To a certain point I feel it's gonna stay 'nil'
 	return nil
 }
