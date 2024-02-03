@@ -44,12 +44,7 @@ and specify the directory where your wallpaper images are stored.`,
 			cmd.Usage()
 			return err
 		}
-		imageUrl, err := cmd.Flags().GetString("url")
-		if err != nil {
-			cmd.Usage()
-			return err
-		}
-		isFuzzy, err := cmd.Flags().GetBool("fuzzy")
+		imageUrl, err := cmd.Flags().GetBool("url")
 		if err != nil {
 			cmd.Usage()
 			return err
@@ -60,7 +55,7 @@ and specify the directory where your wallpaper images are stored.`,
 			return err
 		}
 
-		config := internal.NewConfig(path, imageUrl, isFuzzy, isSlideShow)
+		config := internal.NewConfig(path, imageUrl, isSlideShow)
 		return internal.BackdropAction(os.Stdout, config, args)
 	},
 }
@@ -82,9 +77,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.backdrop.yaml)")
 
 	rootCmd.Flags().StringP("path", "p", "", "Set a custom path to find wallpaper images. If not provided, a default path will be used.")
-	rootCmd.Flags().BoolP("fuzzy", "f", false, "Performs a fuzzy finding.")
 	rootCmd.Flags().BoolP("slideshow", "s", false, "Will configure and set a custom slideshow of images you select with fzf.\nTo select multiple images hit 'Tab' on the images you desire to select, then hit 'Enter' to confirm.")
-	rootCmd.Flags().StringP("url", "u", "", `Provide an image url to be set as wallpaper. The image will be downloaded and previewed. 
+	rootCmd.Flags().BoolP("url", "u", false, `Provide an image url to be set as wallpaper. The image will be downloaded and previewed. 
     If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, 
     the image gets deleted and previous wallpaper is set.`)
 }

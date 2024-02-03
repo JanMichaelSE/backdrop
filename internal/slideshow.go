@@ -1,11 +1,72 @@
 package internal
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+var (
+	inputDuration io.Reader = os.Stdin
+)
+
+func handleSlidehow(out io.Writer, wallpapersPath string, wallpapers []string, imageSelection FuzzySelection) error {
+	for hasConfirmed := false; !hasConfirmed; {
+		previousWallpaper, err := getPreviousWallpaper()
+		if err != nil {
+			return err
+		}
+
+		selectedWallpaper, err := imageSelection(wallpapers)
+		if err != nil {
+			return err
+		}
+
+		duration, err := userDuration(inputDuration)
+		if err != nil {
+			return err
+		}
+
+		selectedWallpaper, err = configureSlideShow(selectedWallpaper, wallpapersPath, duration)
+		if err != nil {
+			return err
+		}
+
+		err = setWallpaper(selectedWallpaper)
+		if err != nil {
+			return err
+		}
+
+		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, func() {})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func userDuration(r io.Reader) (int, error) {
+	reader := bufio.NewReader(r)
+	fmt.Print("What should be the duration per slide? (In Seconds): ")
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return 0, err
+	}
+
+	input = strings.ReplaceAll(input, "\n", "")
+	duration, err := strconv.Atoi(input)
+	if err != nil {
+		return 0, err
+	}
+
+	return duration, nil
+}
 
 func configureSlideShow(imageText, wallpapersPath string, duration int) (string, error) {
 	images := strings.Split(imageText, ";")

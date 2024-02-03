@@ -1,33 +1,32 @@
 package internal
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"strings"
 )
 
 type Config struct {
-	path     string
-	imageUrl string
-	// TODO: Make Fuzzy finding the default
+	path        string
+	isImageUrl  bool
 	isFuzzy     bool
 	isSlideShow bool
 }
 
-func NewConfig(path, imageUrl string, isFuzzy, isSlideShow bool) *Config {
+// NOTE: I made isFuzzy default. Will refactor later
+func NewConfig(path string, isImageUrl, isSlideShow bool) *Config {
 	return &Config{
 		path:        path,
-		imageUrl:    imageUrl,
-		isFuzzy:     isFuzzy,
+		isImageUrl:  isImageUrl,
 		isSlideShow: isSlideShow,
 	}
 }
 
 var (
-	getSelector       GetImageSelector = getImageSelector
+	getSelector       GetFuzzySelector = getFuzzySelector
 	inputConfirmation io.Reader        = os.Stdin
-	inputDuration     io.Reader        = os.Stdin
 )
 
 func BackdropAction(out io.Writer, config *Config, args []string) error {
@@ -45,74 +44,62 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 
 	wallpapers := getWallpapers(wallpapersPath)
 
-outter:
-	for {
-		previousWallpaper, err := getPreviousWallpaper()
-		if err != nil {
-			return err
-		}
-
+	switch {
+	case config.isSlideShow:
 		imageSelection := getSelector(config)
-		selectedWallpaper, err := imageSelection(wallpapers)
+		err := handleSlidehow(out, wallpapersPath, wallpapers, imageSelection)
 		if err != nil {
 			return err
 		}
-
-		if config.isSlideShow {
-			duration, err := userDuration(inputDuration)
-			if err != nil {
-				return err
-			}
-
-			selectedWallpaper, err = configureSlideShow(selectedWallpaper, wallpapersPath, duration)
-			if err != nil {
-				return err
-			}
-
-			err = setWallpaper(selectedWallpaper)
-			if err != nil {
-				return err
-			}
+	case config.isImageUrl:
+		err := handleImageUrl(out, wallpapersPath)
+		if err != nil {
+			return err
 		}
-
-		if selectedWallpaper[0] != '/' {
-			fmt.Println("I did not happen")
-			fullSelectedPath := filepath.Join(wallpapersPath, selectedWallpaper)
-			stats, err := os.Stat(fullSelectedPath)
-			if err == nil && stats.Mode().IsRegular() {
-				err := setWallpaper(fullSelectedPath)
-				if err != nil {
-					return err
-				}
-			}
-			if err != nil {
-				return err
-			}
+	default:
+		imageSelection := getSelector(config)
+		err := handleFuzzySearch(out, wallpapersPath, wallpapers, imageSelection)
+		if err != nil {
+			return err
 		}
-
-	inner:
-		for {
-			userInput, err := userConfirmation(inputConfirmation)
-			if err != nil {
-				return err
-			}
-
-			switch userInput {
-			case "y":
-				fmt.Fprintln(out, "Successfully changed background image!")
-				break outter
-			case "n":
-				setWallpaper(previousWallpaper)
-				if err != nil {
-					return err
-				}
-				break inner
-			default:
-				fmt.Fprintln(out, "Invalid input...")
-			}
-		}
-
 	}
 
 	return nil
+}
+
+func handleSelectionConfirmation(previousWallpaper string, out io.Writer, cleanup func()) (bool, error) {
+	for {
+		userInput, err := userConfirmation(inputConfirmation)
+		if err != nil {
+			return false, err
+		}
+
+		switch userInput {
+		case "y":
+			fmt.Fprintln(out, "Successfully changed background image!")
+			return true, nil
+		case "n":
+			if err := setWallpaper(previousWallpaper); err != nil {
+				return false, err
+			}
+
+			cleanup()
+			return false, nil
+		default:
+			fmt.Fprintln(out, "Invalid input...")
+		}
+	}
+}
+
+func userConfirmation(r io.Reader) (string, error) {
+	reader := bufio.NewReader(r)
+	fmt.Print("Want to save this change? [y/N]: ")
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+
+	input = strings.ToLower(strings.TrimSpace(input))
+	return input, nil
 }

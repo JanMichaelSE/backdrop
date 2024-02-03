@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,11 +14,19 @@ import (
 type testConfig struct {
 	inputConfirmation string
 	inputDuration     string
+	inputImageUrl     string
 	config            *Config
 	expOutput         string
 	expError          error
-	imageSelectorStub GetImageSelector
+	imageSelectorStub GetFuzzySelector
 }
+
+// NOTE: If the tests for TestSetImageUrl fail for fetching image. Try changing these variables.
+// I wanted a real network request as part of my tests.
+var (
+	TEST_IMAGE_URL      = "https://static.frontendmasters.com/assets/teachers/theprimeagen/thumb.webp"
+	TEST_IMAGE_URL_NAME = "thumb.webp"
+)
 
 func TestSetWallpaper(t *testing.T) {
 	initialWallpaper, err := getPreviousWallpaper()
@@ -33,11 +42,11 @@ func TestSetWallpaper(t *testing.T) {
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
-		config:            NewConfig("", "", false, false),
+		config:            NewConfig("", false, false),
 		inputConfirmation: "y\n",
 		expOutput:         "Successfully changed background image!",
 		expError:          nil,
-		imageSelectorStub: func(c *Config) ImageSelection {
+		imageSelectorStub: func(c *Config) FuzzySelection {
 			return func(s []string) (string, error) {
 				return testFile, nil
 			}
@@ -63,21 +72,18 @@ func TestConfigurePath(t *testing.T) {
 	}
 	defer setWallpaper(initialWallpaper)
 
-	testFile, cleanupTempImageFile := setupTempImageFile(t)
-	defer cleanupTempImageFile()
-
 	cleanupCustomPath := cleanupCustomPathTest(t)
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
-		config:            NewConfig("../test/testData/images", "", false, false),
+		config:            NewConfig("../test/testData/images", false, false),
 		inputConfirmation: "y\n",
 		inputDuration:     "10\n",
 		expOutput:         "Successfully changed background image!",
 		expError:          nil,
-		imageSelectorStub: func(c *Config) ImageSelection {
+		imageSelectorStub: func(c *Config) FuzzySelection {
 			return func(s []string) (string, error) {
-				return testFile, nil
+				return "testImage.jpg", nil
 			}
 		},
 	}
@@ -115,11 +121,11 @@ func TestSetSlideShow(t *testing.T) {
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
-		config:            NewConfig("../test/testData/images", "", false, true),
+		config:            NewConfig("../test/testData/images", false, true),
 		inputConfirmation: "y\n",
 		expOutput:         "Successfully changed background image!",
 		expError:          nil,
-		imageSelectorStub: func(c *Config) ImageSelection {
+		imageSelectorStub: func(c *Config) FuzzySelection {
 			return func(s []string) (string, error) {
 				return "testImage.png;testImage2.png;testImage3.png", nil
 			}
@@ -154,6 +160,44 @@ func TestSetSlideShow(t *testing.T) {
 	expectedSlideShowSettings := getExpectedBackdropSlideShowSettings(t)
 	if currentSlideShowSettings != expectedSlideShowSettings {
 		t.Errorf("Expected slide show settings:\n %v \nGot slide show settings:\n %v", expectedSlideShowSettings, currentSlideShowSettings)
+	}
+
+	if !strings.Contains(out.String(), testCase.expOutput) {
+		t.Errorf("Expected output '%v', but got '%v' instead", testCase.expOutput, out.String())
+	}
+}
+
+func TestSetImageUrl(t *testing.T) {
+	initialWallpaper, err := getPreviousWallpaper()
+	if err != nil {
+		t.Fatalf("Error getting system initial wallpaper for eventual cleanup after tests: %v", err)
+	}
+	defer setWallpaper(initialWallpaper)
+
+	cleanup := cleanupImageUrlTest(t)
+	defer cleanup()
+
+	testCase := testConfig{
+		config:            NewConfig("", true, false),
+		inputConfirmation: "y\n",
+		inputImageUrl:     fmt.Sprintf("%v\n", TEST_IMAGE_URL),
+		expOutput:         "Successfully changed background image!",
+		expError:          nil,
+	}
+
+	var out bytes.Buffer
+	inputConfirmation = strings.NewReader(testCase.inputConfirmation)
+	inputImageUrl = strings.NewReader(testCase.inputImageUrl)
+	if err := BackdropAction(&out, testCase.config, []string{}); err != nil {
+		t.Errorf("Expected NO error, but got '%v' instead", err)
+	}
+
+	currentWallpaper, err := getPreviousWallpaper()
+	if err != nil {
+		t.Fatalf("Unexpected error getting wallpaper: %v", err)
+	}
+	if !strings.Contains(currentWallpaper, TEST_IMAGE_URL_NAME) {
+		t.Errorf("Expected wallpaper '%v' to be set for image url, but got '%v' instead", TEST_IMAGE_URL_NAME, currentWallpaper)
 	}
 
 	if !strings.Contains(out.String(), testCase.expOutput) {
@@ -203,7 +247,10 @@ func setupTempImageFile(t *testing.T) (string, func()) {
 		t.Fatalf("Error creating temp file for test setup: %v", err)
 	}
 
-	return file.Name(), func() {
+	path := strings.Split(file.Name(), "/")
+	fileName := path[len(path)-1]
+
+	return fileName, func() {
 		os.Remove(file.Name())
 	}
 }
@@ -228,5 +275,19 @@ func cleanupCustomPathTest(t *testing.T) func() {
 			configPath := filepath.Join(homePath, ".backdrop.yaml")
 			os.Remove(configPath)
 		}
+	}
+}
+
+func cleanupImageUrlTest(t *testing.T) func() {
+	t.Helper()
+
+	wallpapersPath, err := getUserWallpapersPath()
+	if err != nil {
+		t.Fatalf("Error getting userpath in test setup: %v", err)
+	}
+
+	filePath := filepath.Join(wallpapersPath, TEST_IMAGE_URL_NAME)
+	return func() {
+		os.Remove(filePath)
 	}
 }
