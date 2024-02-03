@@ -21,6 +21,7 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 go get -u github.com/JanMichaelSE/backdrop
 go install github.com/JanMichaelSE/backdrop@latest
 ```
+
 ## :wastebasket: Uninstall
 
 ```bash
