@@ -36,6 +36,7 @@ var rootCmd = &cobra.Command{
 	Long: `backdrop is a command-line utility for managing wallpapers on your desktop.
 It allows you to set a new wallpaper, revert to a previous wallpaper, 
 and specify the directory where your wallpaper images are stored.`,
+	Version:      "1.0.0",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -103,8 +104,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// TODO: Discuss with lenny if we want this printed out.
-		// I feel it ruins the tools user experience.
 		// fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }

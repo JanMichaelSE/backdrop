@@ -15,7 +15,6 @@ type Config struct {
 	isSlideShow bool
 }
 
-// NOTE: I made isFuzzy default. Will refactor later
 func NewConfig(path string, isImageUrl, isSlideShow bool) *Config {
 	return &Config{
 		path:        path,

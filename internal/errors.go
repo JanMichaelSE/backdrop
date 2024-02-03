@@ -2,7 +2,6 @@ package internal
 
 import "errors"
 
-// TODO: Might later move to a errors.go
 var (
 	ErrNoCompatibleDesktopEnvironment = errors.New("No compatible desktop environment found for setting wallpaper")
 	ErrUserCanceledSelection          = errors.New("User canceled selection, exiting program")
