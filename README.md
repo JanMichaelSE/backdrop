@@ -21,11 +21,11 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 go get -u github.com/JanMichaelSE/backdrop
 go install github.com/JanMichaelSE/backdrop@latest
 ```
-## :wrench: Installation
+## :wastebasket: Uninstall
 
 ```bash
-go get github.com/JanMichaelSE/backdrop
-go install github.com/JanMichaelSE/backdrop
+rm $(go env GOPATH)/bin/backdrop
+go clean -modcache # <- Optional
 ```
 
 ## &#x2705; What's Supported
@@ -42,7 +42,7 @@ go install github.com/JanMichaelSE/backdrop
 
 ## :package: Dependencies
 
-Backdrop requires you install the latest version of go. (Working on providing a Binary)
+Backdrop requires you to install the latest version of go. (Working on providing a Binary)
 
 ## :computer: Usage
 
@@ -55,7 +55,7 @@ Backdrop provides several options for managing your wallpapers:
 - `-s, --slideshow`: 
     - Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
 - `-u, --url`: 
-    - Provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
+    - You will be prompted to provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
 - `-v, --version`: 
     - Print version information.
 
