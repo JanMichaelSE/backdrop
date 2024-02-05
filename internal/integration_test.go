@@ -265,15 +265,16 @@ func cleanupCustomPathTest(t *testing.T) func() {
 			err := configureWallpaperPath(originalCustomImagePath)
 			if err != nil {
 				t.Fatalf("Error during CustomPathTest cleanup, couldn't set original configureImagePath: '%v'", err)
-			}
-		} else {
-			homePath, err := os.UserHomeDir()
-			if err != nil {
-				t.Fatalf("Error during CustomPathTest cleanup, could'nt get user home directory: '%v'", err)
-			}
+			} else {
+				homePath, err := os.UserHomeDir()
+				if err != nil {
+					t.Fatalf("Error during CustomPathTest cleanup, could'nt get user home directory: '%v'", err)
+				}
 
-			configPath := filepath.Join(homePath, ".backdrop.yaml")
-			os.Remove(configPath)
+				configPath := filepath.Join(homePath, ".backdrop.yaml")
+				os.Remove(configPath)
+
+			}
 		}
 	}
 }
