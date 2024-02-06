@@ -10,20 +10,23 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 ## :star: Features
 
 - Set a new wallpaper
-- Set wallpapers with `fzf` (Requires `fzf`)
+- Set wallpapers with `fzf`
 - Specify a custom path for wallpaper images
 - Set custom slideshow of images with your desired duration per slide.
 - Set wallpapers by providing a URL to an image.
-- Uninstall Backdrop
 
 ## :wrench: Installation
 
-The installation process is straightforward. Simply clone the repository and run the `install.sh` script.
+```bash
+go get -u github.com/JanMichaelSE/backdrop
+go install github.com/JanMichaelSE/backdrop@latest
+```
+
+## :wastebasket: Uninstall
 
 ```bash
-git clone https://github.com/JanMichaelSE/backdrop.git
-cd backdrop
-./install.sh
+rm $(go env GOPATH)/bin/backdrop
+go clean -modcache # <- Optional
 ```
 
 ## &#x2705; What's Supported
@@ -33,18 +36,14 @@ cd backdrop
 - CentOS/MATE (Doesn't support Slideshows)
 - Coming Soon:
     - MacOS
-    - Microsoft
+    - Microsoft (Make a PR because I won't do it)
 - Will not be Supported:
     - WSL
-#### Shells
-- Bash
-- Zsh
-- Fish
 
 
 ## :package: Dependencies
 
-Backdrop requires `fzf` for fuzzy finding of wallpapers. If `fzf` is not installed, the script will automatically install it for you.
+Backdrop requires you to install the latest version of go. (Working on providing a Binary)
 
 ## :computer: Usage
 
@@ -52,18 +51,14 @@ Backdrop provides several options for managing your wallpapers:
 
 - `-p, --path <PATH>`: 
     - Set a custom path to find wallpaper images. If not provided, a default path will be used.
-- `-f, --fuzzy`: 
-    - Performs a fuzzy finding (Requires fzf).
 - `-h, --help`: 
     - Displays help information on how to use the command, listing all available options.
 - `-s, --slideshow`: 
     - Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
 - `-u, --url`: 
-    - Provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
+    - You will be prompted to provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
 - `-v, --version`: 
     - Print version information.
-- `--uninstall`: 
-    - Will uninstall Backdrop by removing all PATHs and Backdrop files.
 
 For example, to set a custom path for your wallpapers, you can use the `-p` or `--path` flag:
 

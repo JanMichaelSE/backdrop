@@ -1,0 +1,37 @@
+<background>
+  <starttime>
+    <year>2012</year>
+    <month>01</month>
+    <day>01</day>
+    <hour>00</hour>
+    <minute>00</minute>
+    <second>00</second>
+  </starttime>
+  <static>
+   <duration>10.0</duration>
+   <file>../test/testData/images/testImage.png</file>
+  </static>
+   <transition>
+   <duration>0.5</duration>
+   <from>../test/testData/images/testImage.png</from>
+   <to>../test/testData/images/testImage2.png</to>
+   </transition>
+  <static>
+   <duration>10.0</duration>
+   <file>../test/testData/images/testImage2.png</file>
+  </static>
+   <transition>
+   <duration>0.5</duration>
+   <from>../test/testData/images/testImage2.png</from>
+   <to>../test/testData/images/testImage3.png</to>
+   </transition>
+  <static>
+   <duration>10.0</duration>
+   <file>../test/testData/images/testImage3.png</file>
+  </static>
+  <transition>
+   <duration>0.5</duration>
+   <from>../test/testData/images/testImage3.png</from>
+   <to>../test/testData/images/testImage.png</to>
+  </transition>
+</background>
