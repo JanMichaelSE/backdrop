@@ -38,7 +38,7 @@ func TestSetWallpaper(t *testing.T) {
 	testFile, cleanupTempImageFile := setupTempImageFile(t)
 	defer cleanupTempImageFile()
 
-	cleanupCustomPath := cleanupCustomPathTest(t)
+	cleanupCustomPath := cleanupCustomPath(t)
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
@@ -72,7 +72,7 @@ func TestConfigurePath(t *testing.T) {
 	}
 	defer setWallpaper(initialWallpaper)
 
-	cleanupCustomPath := cleanupCustomPathTest(t)
+	cleanupCustomPath := cleanupCustomPath(t)
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
@@ -117,7 +117,7 @@ func TestSetSlideShow(t *testing.T) {
 	}
 	defer setWallpaper(initialWallpaper)
 
-	cleanupCustomPath := cleanupCustomPathTest(t)
+	cleanupCustomPath := cleanupCustomPath(t)
 	defer cleanupCustomPath()
 
 	testCase := testConfig{
@@ -174,7 +174,7 @@ func TestSetImageUrl(t *testing.T) {
 	}
 	defer setWallpaper(initialWallpaper)
 
-	cleanup := cleanupImageUrlTest(t)
+	cleanup := cleanupImageUrl(t)
 	defer cleanup()
 
 	testCase := testConfig{
@@ -255,7 +255,7 @@ func setupTempImageFile(t *testing.T) (string, func()) {
 	}
 }
 
-func cleanupCustomPathTest(t *testing.T) func() {
+func cleanupCustomPath(t *testing.T) func() {
 	t.Helper()
 
 	originalCustomImagePath, ok := viper.Get("WallpapersPath").(string)
@@ -279,7 +279,7 @@ func cleanupCustomPathTest(t *testing.T) func() {
 	}
 }
 
-func cleanupImageUrlTest(t *testing.T) func() {
+func cleanupImageUrl(t *testing.T) func() {
 	t.Helper()
 
 	wallpapersPath, err := getUserWallpapersPath()
