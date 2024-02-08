@@ -1,0 +1,89 @@
+name: Create Release
+
+on:
+  pull_request:
+    types:
+    - closed
+    branches:
+      - main
+
+    paths-ignore:
+    - ".github/workflows/*"
+    - ".github/*.md"
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.21"]
+    outputs:
+      backdrop-version: ${{ steps.publish.outputs.version }}
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Build project
+        run: go build
+
+      - name: Get version
+        id: publish
+        run: echo "version=$(./backdrop -v | cut -d " " -f3)" >> $GITHUB_OUTPUT
+
+  release:
+    needs: version
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create-new-release.outputs.upload_url }}
+
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v4
+
+      - name: version verification
+        run: echo "Version to release:" "${{ needs.version.outputs.backdrop-version }}"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create-new-release
+        with:
+          draft: false
+          prerelease: false
+          release_name: v${{ needs.version.outputs.backdrop-version }}
+          tag_name: v${{ needs.version.outputs.backdrop-version }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Artifacts:
+    needs: [release, version]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.21"]
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: build artifact
+        run: go build
+
+      - name: upload linux artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: backdrop
+          asset_name: backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz
+          asset_content_type: application/gzip

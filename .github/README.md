@@ -5,6 +5,9 @@
 [![Contributors Badge](https://img.shields.io/github/contributors/JanMichaelSE/backdrop)](https://github.com/JanMichaelSE/backdrop/graphs/contributors)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 
+[![made-with-Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev/)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/JanMichaelSE/backdrop)
+
 Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored.
 
 ## :star: Features
@@ -17,6 +20,21 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 ## :wrench: Installation
 
+you can install Backdrop by downloading and unziping the `tar.gz` file for your operating system (if available) that is included in the release and place it under the following path:
+```bash
+mkdir -p $HOME/.backdrop/bin
+cp backdrop $HOME/.backdrop/bin
+```
+
+or you can install it by compiling the source code
+```bash
+git clone https://github.com/JanMichaelSE/backdrop.git
+cd backdrop
+go build
+go install
+```
+
+<!--NOTE: not sure if we should leave this portion on -->
 ```bash
 go get -u github.com/JanMichaelSE/backdrop
 go install github.com/JanMichaelSE/backdrop@latest
@@ -40,7 +58,7 @@ go clean -modcache # <- Optional
 - Will not be Supported:
     - WSL
 
-
+<!-- NOTE: Let me know if we should delete/modify this section -->
 ## :package: Dependencies
 
 Backdrop requires you to install the latest version of go. (Working on providing a Binary)
