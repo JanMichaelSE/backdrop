@@ -20,24 +20,47 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 ## :wrench: Installation
 
-you can install Backdrop by downloading and unziping the `tar.gz` file for your operating system (if available) that is included in the release and place it under the following path:
+### If you have go version 1.21 or greater
+You can install backdrop by using the following go command
+```bash
+go install github.com/JanMichaelSE/backdrop@latest
+```
+
+### Provided binary
+you can install Backdrop by downloading and unziping the `tar.gz` file for your operating system (if available) that is included in the release
+```bash
+tar -xzf backdrop-gnome-desktop-v1.0.0.linux-amd64.tar.gz
+```
+
+After place it under the following path:
 ```bash
 mkdir -p $HOME/.backdrop/bin
 cp backdrop $HOME/.backdrop/bin
 ```
 
-or you can install it by compiling the source code
+Finally add the binary into the `PATH` variable
+```bash
+echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
+source $HOME/.bashrc
+```
+
+### From Source code
+You can install it by compiling the source code
 ```bash
 git clone https://github.com/JanMichaelSE/backdrop.git
 cd backdrop
 go build
-go install
 ```
 
-<!--NOTE: not sure if we should leave this portion on -->
+Optionally move it to a directory in your PATH.
 ```bash
-go get -u github.com/JanMichaelSE/backdrop
-go install github.com/JanMichaelSE/backdrop@latest
+mv backdrop $HOME/.backdrop/bin
+```
+
+Finally add the binary into the `PATH` variable
+```bash
+echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
+source $HOME/.bashrc
 ```
 
 ## :wastebasket: Uninstall
@@ -57,11 +80,6 @@ go clean -modcache # <- Optional
     - Microsoft (Make a PR because I won't do it)
 - Will not be Supported:
     - WSL
-
-<!-- NOTE: Let me know if we should delete/modify this section -->
-## :package: Dependencies
-
-Backdrop requires you to install the latest version of go. (Working on providing a Binary)
 
 ## :computer: Usage
 
