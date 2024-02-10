@@ -3,13 +3,14 @@ name: Check Format
 on:
   pull_request:
     types:
-    - opened
+      - opened
+      - synchronize
     branches:
       - main
 
     paths-ignore:
-    - ".github/workflows/*"
-    - ".github/*.md"
+      - ".github/workflows/*"
+      - ".github/*.md"
 
 jobs:
   Format:
@@ -17,6 +18,7 @@ jobs:
     strategy:
       matrix:
         go-version: ["1.21"]
+
     steps:
       - name: Get Code
         uses: actions/checkout@v4
@@ -27,4 +29,26 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Check code Format
-        run: go fmt
+        id: revision
+        run: |
+          gofmt -l . > format-result
+          if [ -s format-result ]; then
+            echo "formatted=false" >> $GITHUB_OUTPUT
+            # Capture the output of gofmt for use in the PR comment
+            echo "result<<EOF" >> $GITHUB_OUTPUT
+            cat format-result >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "formatted=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR
+        if: steps.revision.outputs.formatted == 'false'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Code formatting issues found:
+            ```
+            ${{ steps.revision.outputs.result }}
+            ```
+            Please ensure code is properly formatted so PR can be Reviewed and Approved.
