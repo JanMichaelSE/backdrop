@@ -9,8 +9,7 @@ on:
       - main
 
     paths-ignore:
-      - ".github/workflows/*"
-      - ".github/*.md"
+      - ".github/**"
 
 jobs:
   Format:
