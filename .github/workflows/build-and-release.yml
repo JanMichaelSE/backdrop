@@ -78,6 +78,9 @@ jobs:
       - name: build artifact
         run: go build
 
+      - name: Compress Artifact
+        run: tar -czvf backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz backdrop
+
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
         env:
