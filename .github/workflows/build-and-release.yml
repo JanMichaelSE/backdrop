@@ -61,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   Artifacts:
-    needs: [release, version]
+    needs: release
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,12 +78,15 @@ jobs:
       - name: build artifact
         run: go build
 
+      - name: Compress Artifact
+        run: tar -czvf backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz backdrop
+
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: backdrop
+          asset_path: backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz
           asset_name: backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz
           asset_content_type: application/gzip

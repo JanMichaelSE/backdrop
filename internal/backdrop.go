@@ -77,7 +77,7 @@ func handleSelectionConfirmation(previousWallpaper string, out io.Writer, cleanu
 		case "y":
 			fmt.Fprintln(out, "Successfully changed background image!")
 			return true, nil
-		case "n":
+		case "n", "":
 			if err := setWallpaper(previousWallpaper); err != nil {
 				return false, err
 			}

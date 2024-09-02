@@ -38,12 +38,12 @@ func getUserWallpapersPath() (string, error) {
 		}
 	}
 
-	configPath := fmt.Sprintf("%v/.config/backdrop/wallpapers", homePath)
+	configPath := filepath.Join(homePath, ".config", "backdrop", "wallpapers")
 	if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
 		return configPath, nil
 	}
 
-	picturesPath := fmt.Sprintf("%v/Pictures/wallpapers", homePath)
+	picturesPath := filepath.Join(homePath, "Pictures", "wallpapers")
 	if stat, err := os.Stat(picturesPath); err == nil && stat.IsDir() {
 		return picturesPath, nil
 	}
