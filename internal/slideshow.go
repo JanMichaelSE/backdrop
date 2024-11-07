@@ -59,7 +59,7 @@ func userDuration(r io.Reader) (int, error) {
 		return 0, err
 	}
 
-	input = strings.ReplaceAll(input, "\n", "")
+	input = strings.TrimSpace(input)
 	duration, err := strconv.Atoi(input)
 	if err != nil {
 		return 0, err

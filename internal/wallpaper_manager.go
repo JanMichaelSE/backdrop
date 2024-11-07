@@ -12,6 +12,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	gnomeSchema = "org.gnome.desktop.background"
+	mateSchema  = "org.mate.desktop.background"
+)
+
 func configureWallpaperPath(path string) error {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
@@ -52,15 +57,18 @@ func getUserWallpapersPath() (string, error) {
 	return "", ErrNoValidImagesPath
 }
 
-func getWallpapers(path string) []string {
-	fileEntries, _ := os.ReadDir(path)
+func getWallpapers(path string) ([]string, error) {
+	fileEntries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read directory %s: %w", path, err)
+	}
 
 	files := make([]string, 0, len(fileEntries))
 	for _, file := range fileEntries {
 		files = append(files, file.Name())
 	}
 
-	return files
+	return files, nil
 }
 
 func listSchemas() (*bytes.Buffer, error) {
@@ -77,64 +85,49 @@ func listSchemas() (*bytes.Buffer, error) {
 func getPreviousWallpaper() (string, error) {
 	switch runtime.GOOS {
 	case "linux":
-		schemas, err := listSchemas()
-		if err != nil {
-			return "", err
-		}
-
-		if strings.Contains(schemas.String(), "gnome.desktop.background") {
-			cmdGetPicture := exec.Command("gsettings", "get", "org.gnome.desktop.background", "picture-uri")
-			var outGetPicture bytes.Buffer
-			cmdGetPicture.Stdout = &outGetPicture
-			err := cmdGetPicture.Run()
-			if err != nil {
-				return "", err
-			}
-
-			uri := strings.ReplaceAll(strings.Trim(outGetPicture.String(), "\n"), "'", "")
-			if strings.Contains(uri, "://") {
-				parts := strings.SplitN(uri, "://", 2)
-				if len(parts) == 2 {
-					return parts[1], nil
-				}
-			}
-
-			return uri, nil
-		}
-
-		if strings.Contains(schemas.String(), "mate.desktop.background") {
-			cmdGetPicture := exec.Command("gsettings", "get", "org.mate.desktop.background", "picture-uri")
-			var outGetPicture bytes.Buffer
-			cmdGetPicture.Stdout = &outGetPicture
-			err := cmdGetPicture.Run()
-			if err != nil {
-				return "", err
-			}
-
-			uri := strings.ReplaceAll(strings.Trim(outGetPicture.String(), "\n"), "'", "")
-			if strings.Contains(uri, "://") {
-				parts := strings.SplitN(uri, "://", 2)
-				if len(parts) == 2 {
-					return parts[1], nil
-				}
-			}
-
-			return uri, nil
-		}
-
+		return getPreviousWallpaperLinux()
 	case "windows":
-		cmdGetPicture := exec.Command("powershell", "-Command", "Get-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop\\' -Name Wallpaper")
-		var outGetPicture bytes.Buffer
-		cmdGetPicture.Stdout = &outGetPicture
-		err := cmdGetPicture.Run()
-		if err != nil {
-			return "", err
-		}
-		wallpaperPath := strings.TrimSpace(outGetPicture.String())
-		return wallpaperPath, nil
+		return getPreviousWallpaperWindows()
 	}
+	return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
+
+}
+
+func getPreviousWallpaperLinux() (string, error) {
+	if !commandExist("gsettings") {
+		return "", fmt.Errorf("gssettings not available")
+	}
+
+	schemas, err := listSchemas()
+	if err != nil {
+		return "", err
+	}
+
+	if strings.Contains(schemas.String(), gnomeSchema) {
+		return getGsettingsWallpaper(gnomeSchema)
+	}
+
+	if strings.Contains(schemas.String(), mateSchema) {
+		return getGsettingsWallpaper(mateSchema)
+	}
+
 	return "", ErrNoCompatibleDesktopEnvironment
 
+}
+
+func getPreviousWallpaperWindows() (string, error) {
+	if !commandExist("powershell") {
+		return "", fmt.Errorf("powershell not available on Windows")
+	}
+	cmdGetPicture := exec.Command("powershell", "-Command", "(Get-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop' -Name Wallpaper).Wallpaper")
+	var outGetPicture bytes.Buffer
+	cmdGetPicture.Stdout = &outGetPicture
+	err := cmdGetPicture.Run()
+	if err != nil {
+		return "", err
+	}
+	wallpaperPath := strings.TrimSpace(outGetPicture.String())
+	return wallpaperPath, nil
 }
 
 func setWallpaper(wallpaper string) error {
@@ -149,9 +142,20 @@ func setWallpaper(wallpaper string) error {
 }
 
 func setWallpaperWindows(wallpaper string) error {
-	psCommand := fmt.Sprintf(`RUNDLL32.EXE user32.dll, UpdatePerUserSystemParameters ,1, True; $path = "%s"; [SystemParametersInfo]::SystemParametersInfo(20, 0, $path, 3)`, wallpaper)
-	cmdSetPicture := exec.Command("powershell", "-Command", psCommand)
-	if err := cmdSetPicture.Run(); err != nil {
+	psCommand := fmt.Sprintf(`Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class Wallpaper {
+	[DllImport("user32.dll", CharSet = CharSet.Auto)]
+	public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+	public static void SetWallpaper(string path) {
+		 SystemParametersInfo(20, 0, path, 0x01 | 0x02);
+	}
+}
+'@; [Wallpaper]::SetWallpaper("%s")`, wallpaper)
+
+	cmd := exec.Command("powershell", "-command", psCommand)
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%w : %v", ErrCouldNotSetBackground, err)
 	}
 	return nil
