@@ -48,7 +48,7 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 	switch {
 	case config.isSlideShow:
 		imageSelection := getSelector(config)
-		err := handleSlidehow(out, wallpapersPath, wallpapers, imageSelection)
+		err := handleSlideshow(out, wallpapersPath, wallpapers, imageSelection)
 		if err != nil {
 			return err
 		}

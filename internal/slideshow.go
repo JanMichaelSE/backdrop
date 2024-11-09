@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -14,7 +15,7 @@ var (
 	inputDuration io.Reader = os.Stdin
 )
 
-func handleSlidehow(out io.Writer, wallpapersPath string, wallpapers []string, imageSelection FuzzySelection) error {
+func handleSlideshow(out io.Writer, wallpapersPath string, wallpapers []string, imageSelection FuzzySelection) error {
 	for hasConfirmed := false; !hasConfirmed; {
 		previousWallpaper, err := getPreviousWallpaper()
 		if err != nil {
@@ -56,13 +57,13 @@ func userDuration(r io.Reader) (int, error) {
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to read duration input: %w", err)
 	}
 
 	input = strings.TrimSpace(input)
 	duration, err := strconv.Atoi(input)
-	if err != nil {
-		return 0, err
+	if err != nil || duration <= 0 {
+		return 0, fmt.Errorf("invalid duration: please enter a positive integer")
 	}
 
 	return duration, nil
@@ -70,6 +71,19 @@ func userDuration(r io.Reader) (int, error) {
 
 func configureSlideShow(imageText, wallpapersPath string, duration int) (string, error) {
 	images := strings.Split(imageText, ";")
+
+	switch runtime.GOOS {
+	case "linux":
+		return configureSlideShowLinux(images, wallpapersPath, duration)
+	case "windows":
+		return "", fmt.Errorf("SlideShow is currently not supported for Windows.")
+
+	default:
+		return "", ErrNoCompatibleOS
+	}
+}
+
+func configureSlideShowLinux(images []string, wallpapersPath string, duration int) (string, error) {
 
 	slideShowFile, slideShowConfigFile, err := createSlideShowDirectory()
 	if err != nil {
@@ -91,25 +105,34 @@ func configureSlideShow(imageText, wallpapersPath string, duration int) (string,
 func createSlideShowDirectory() (string, string, error) {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("unable to find user home directory: %w", err)
 	}
 
-	slideShowPath := filepath.Join(homePath, ".local/share/gnome-background-properties")
-	_, err = os.Stat(slideShowPath)
-	if err != nil {
-		os.MkdirAll(slideShowPath, 0777)
+	switch runtime.GOOS {
+	case "linux":
+		slideShowPath := filepath.Join(homePath, ".local", "share", "gnome-background-properties")
+		_, err = os.Stat(slideShowPath)
+		if err != nil {
+			os.MkdirAll(slideShowPath, 0777)
+		}
+
+		slideShowConfigPath := filepath.Join(homePath, ".local", "share", "backgrounds", "backdrop_settings")
+		_, err = os.Stat(slideShowConfigPath)
+		if err != nil {
+			os.MkdirAll(slideShowConfigPath, 0777)
+		}
+
+		slideShowFile := filepath.Join(slideShowPath, "backdrop_slideshow.xml")
+		slideShowConfigFile := filepath.Join(slideShowConfigPath, "backdrop_settings.xml")
+
+		return slideShowFile, slideShowConfigFile, nil
+	case "windows":
+		return "", "", fmt.Errorf("SlideShow is currently not supported for Windows.")
+
+	default:
+		return "", "", ErrNoCompatibleOS
 	}
 
-	slideShowConfigPath := filepath.Join(homePath, ".local/share/backgrounds/backdrop_settings")
-	_, err = os.Stat(slideShowConfigPath)
-	if err != nil {
-		os.MkdirAll(slideShowConfigPath, 0777)
-	}
-
-	slideShowFile := filepath.Join(slideShowPath, "backdrop_slideshow.xml")
-	slideShowConfigFile := filepath.Join(slideShowConfigPath, "backdrop_settings.xml")
-
-	return slideShowFile, slideShowConfigFile, nil
 }
 
 func createSlideShowFile(outFile, configFile string) error {
@@ -132,16 +155,16 @@ func createSlideShowFile(outFile, configFile string) error {
 
 	file, err := os.Create(outFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create slideshow file at %s: %w", outFile, err)
 	}
 	defer file.Close()
 
 	if _, err := file.WriteString(content.String()); err != nil {
-		return err
+		return fmt.Errorf("failed to write content to slideshow file %s: %w", outFile, err)
 	}
 
 	if err := os.Chmod(outFile, 0777); err != nil {
-		return err
+		return fmt.Errorf("failed to set permissions for slideshow file %s: %w", outFile, err)
 	}
 
 	return nil
@@ -189,16 +212,16 @@ func createSlideShowConfigFile(images []string, configFile, wallpapersPath strin
 
 	file, err := os.Create(configFile)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create slideshow config file at %s: %w", configFile, err)
 	}
 	defer file.Close()
 
 	if _, err := file.WriteString(content.String()); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write content to config file %s: %w", configFile, err)
 	}
 
 	if err := os.Chmod(configFile, 0777); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to set permissions for config file %s: %w", configFile, err)
 	}
 
 	return file.Name(), nil

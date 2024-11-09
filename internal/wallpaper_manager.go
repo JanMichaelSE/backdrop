@@ -32,6 +32,7 @@ func configureWallpaperPath(path string) error {
 }
 
 func getUserWallpapersPath() (string, error) {
+	var configPath string
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
@@ -44,7 +45,14 @@ func getUserWallpapersPath() (string, error) {
 		}
 	}
 
-	configPath := filepath.Join(homePath, ".config", "backdrop", "wallpapers")
+	switch runtime.GOOS {
+	case "linux":
+		configPath = filepath.Join(homePath, ".config", "backdrop", "wallpapers")
+	case "windows":
+		// TODO: Implement config file for windows
+		configPath = ""
+	}
+
 	if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
 		return configPath, nil
 	}
@@ -72,6 +80,9 @@ func getWallpapers(path string) ([]string, error) {
 }
 
 func listSchemas() (*bytes.Buffer, error) {
+	if !commandExist("gsettings") {
+		return nil, fmt.Errorf("gssettings not available")
+	}
 	cmd := exec.Command("gsettings", "list-schemas")
 	var outListSchemas bytes.Buffer
 	cmd.Stdout = &outListSchemas
@@ -142,6 +153,9 @@ func setWallpaper(wallpaper string) error {
 }
 
 func setWallpaperWindows(wallpaper string) error {
+	if !commandExist("powershell") {
+		return fmt.Errorf("powershell not available on Windows")
+	}
 	psCommand := fmt.Sprintf(`Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
