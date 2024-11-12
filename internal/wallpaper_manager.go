@@ -81,8 +81,9 @@ func getWallpapers(path string) ([]string, error) {
 
 func listSchemas() (*bytes.Buffer, error) {
 	if !commandExist("gsettings") {
-		return nil, fmt.Errorf("gssettings not available")
+		return nil, fmt.Errorf("%w : %s", ErrCommandNotFound, "gsettings")
 	}
+
 	cmd := exec.Command("gsettings", "list-schemas")
 	var outListSchemas bytes.Buffer
 	cmd.Stdout = &outListSchemas
@@ -105,10 +106,6 @@ func getPreviousWallpaper() (string, error) {
 }
 
 func getPreviousWallpaperLinux() (string, error) {
-	if !commandExist("gsettings") {
-		return "", fmt.Errorf("gssettings not available")
-	}
-
 	schemas, err := listSchemas()
 	if err != nil {
 		return "", err
@@ -128,8 +125,9 @@ func getPreviousWallpaperLinux() (string, error) {
 
 func getPreviousWallpaperWindows() (string, error) {
 	if !commandExist("powershell") {
-		return "", fmt.Errorf("powershell not available on Windows")
+		return "", fmt.Errorf("%w : %s", ErrCommandNotFound, "powershell")
 	}
+
 	cmdGetPicture := exec.Command("powershell", "-Command", "(Get-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop' -Name Wallpaper).Wallpaper")
 	var outGetPicture bytes.Buffer
 	cmdGetPicture.Stdout = &outGetPicture
@@ -154,7 +152,7 @@ func setWallpaper(wallpaper string) error {
 
 func setWallpaperWindows(wallpaper string) error {
 	if !commandExist("powershell") {
-		return fmt.Errorf("powershell not available on Windows")
+		return fmt.Errorf("%w : %s", ErrCommandNotFound, "powershell")
 	}
 	psCommand := fmt.Sprintf(`Add-Type -TypeDefinition @'
 using System;
@@ -208,4 +206,23 @@ func setWallpaperLinux(wallpaper string) error {
 	}
 
 	return ErrNoCompatibleDesktopEnvironment
+}
+
+func getGsettingsWallpaper(schema string) (string, error) {
+	cmd := exec.Command("gsettings", "get", schema, "picture-uri")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+	uri := strings.ReplaceAll(strings.Trim(out.String(), "\n"), "'", "")
+	if strings.Contains(uri, "://") {
+		parts := strings.SplitN(uri, "://", 2)
+		if len(parts) == 2 {
+			return parts[1], nil
+		}
+		return "", fmt.Errorf("unexpected URI format: %s", uri)
+	}
+	return uri, nil
 }

@@ -17,5 +17,5 @@ var (
       Note: If "BACKDROP_IMAGE_PATH" shell variable is set, it will have priority and be used to list images.
             This is set by using the "--path" or "-p" flag mentioned above.
     `)
-	ErrCouldNotRetrievePreviousWallpaper = errors.New("Could not get previous wallpaper")
+	ErrCommandNotFound = errors.New("Required command is not available")
 )

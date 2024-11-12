@@ -110,29 +110,31 @@ func createSlideShowDirectory() (string, string, error) {
 
 	switch runtime.GOOS {
 	case "linux":
-		slideShowPath := filepath.Join(homePath, ".local", "share", "gnome-background-properties")
-		_, err = os.Stat(slideShowPath)
-		if err != nil {
-			os.MkdirAll(slideShowPath, 0777)
-		}
-
-		slideShowConfigPath := filepath.Join(homePath, ".local", "share", "backgrounds", "backdrop_settings")
-		_, err = os.Stat(slideShowConfigPath)
-		if err != nil {
-			os.MkdirAll(slideShowConfigPath, 0777)
-		}
-
-		slideShowFile := filepath.Join(slideShowPath, "backdrop_slideshow.xml")
-		slideShowConfigFile := filepath.Join(slideShowConfigPath, "backdrop_settings.xml")
-
-		return slideShowFile, slideShowConfigFile, nil
+		return configureLinuxSlideShowPaths(homePath)
 	case "windows":
 		return "", "", fmt.Errorf("SlideShow is currently not supported for Windows.")
 
 	default:
 		return "", "", ErrNoCompatibleOS
 	}
+}
 
+func configureLinuxSlideShowPaths(homePath string) (string, string, error) {
+	paths := map[string]string{
+		"slideShowPath":      filepath.Join(homePath, ".local", "share", "gnome-background-properties"),
+		"slideShowConfigPath": filepath.Join(homePath, ".local", "share", "backgrounds", "backdrop_settings"),
+	}
+
+	for _, path := range paths {
+		if err := os.MkdirAll(path, 0777); err != nil {
+			return "", "", fmt.Errorf("failed to create directory %s: %w", path, err)
+		}
+	}
+
+	slideShowFile := filepath.Join(paths["slideShowPath"], "backdrop_slideshow.xml")
+	slideShowConfigFile := filepath.Join(paths["slideShowConfigPath"], "backdrop_settings.xml")
+
+	return slideShowFile, slideShowConfigFile, nil
 }
 
 func createSlideShowFile(outFile, configFile string) error {
