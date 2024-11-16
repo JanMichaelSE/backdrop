@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -111,6 +112,10 @@ func TestConfigurePath(t *testing.T) {
 }
 
 func TestSetSlideShow(t *testing.T) {
+
+	if runtime.GOOS == "windows" {
+		t.Skip("SlideShow is not supported on Windows")
+	}
 	initialWallpaper, err := getPreviousWallpaper()
 	if err != nil {
 		t.Fatalf("Error getting system initial wallpaper for eventual cleanup after tests: %v", err)
@@ -242,16 +247,17 @@ func setupTempImageFile(t *testing.T) (string, func()) {
 		t.Fatalf("Error getting userpath in test setup: %v", err)
 	}
 
-	file, err := os.CreateTemp(wallpapersPath, "backdropTestFile")
+	file, err := os.CreateTemp(wallpapersPath, "backdropTestFile*.jpg")
 	if err != nil {
 		t.Fatalf("Error creating temp file for test setup: %v", err)
 	}
-
-	path := strings.Split(file.Name(), "/")
-	fileName := path[len(path)-1]
+	file.Close()
+	_, fileName := filepath.Split(file.Name())
 
 	return fileName, func() {
-		os.Remove(file.Name())
+		if err := os.Remove(file.Name()); err != nil && !os.IsNotExist(err) {
+			t.Fatalf("Error cleaning up temp file %s: %v", fileName, err)
+		}
 	}
 }
 
