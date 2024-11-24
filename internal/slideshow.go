@@ -121,7 +121,7 @@ func createSlideShowDirectory() (string, string, error) {
 
 func configureLinuxSlideShowPaths(homePath string) (string, string, error) {
 	paths := map[string]string{
-		"slideShowPath":      filepath.Join(homePath, ".local", "share", "gnome-background-properties"),
+		"slideShowPath":       filepath.Join(homePath, ".local", "share", "gnome-background-properties"),
 		"slideShowConfigPath": filepath.Join(homePath, ".local", "share", "backgrounds", "backdrop_settings"),
 	}
 

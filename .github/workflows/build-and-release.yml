@@ -9,8 +9,6 @@ on:
     paths-ignore:
       - ".github/**"
 
-  workflow_dispatch:
-
 jobs:
   version:
     if: github.event.pull_request.merged == true

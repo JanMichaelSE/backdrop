@@ -45,6 +45,7 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	switch {
 	case config.isSlideShow:
 		imageSelection := getSelector(config)

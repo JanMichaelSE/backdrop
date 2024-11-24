@@ -165,7 +165,7 @@ go clean -modcache  # Optional
   - CentOS/MATE (Slideshows are not supported)
   - Windows (Slideshows are not supported)
 - **Coming Soon**:
-  - macOS
+  - macOS (Make a PR because I won't do it)
 - **Not Supported**:
   - WSL (Windows Subsystem for Linux)
 
@@ -197,7 +197,7 @@ backdrop --path /path/to/your/wallpapers
 
 ## :busts_in_silhouette: Authors
 
-Backdrop is maintained by **JanMichaelSE**.
+Backdrop is maintained by **JanMichaelSE** & **theweak1**.
 
 ---
 

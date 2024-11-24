@@ -116,6 +116,7 @@ func TestSetSlideShow(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("SlideShow is not supported on Windows")
 	}
+
 	initialWallpaper, err := getPreviousWallpaper()
 	if err != nil {
 		t.Fatalf("Error getting system initial wallpaper for eventual cleanup after tests: %v", err)
