@@ -12,99 +12,194 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 
 ## :star: Features
 
-- Set a new wallpaper
-- Set wallpapers with `fzf`
-- Specify a custom path for wallpaper images
-- Set custom slideshow of images with your desired duration per slide.
-- Set wallpapers by providing a URL to an image.
+- Set a new wallpaper.
+- Use `fzf` for fuzzy finding and selecting wallpapers.
+- Specify a custom directory for wallpaper images.
+- Create custom slideshows with a desired duration per slide.
+- Set wallpapers using a URL to an image.
+
+---
 
 ## :wrench: Installation
 
-### If you have go version 1.21 or greater
-You can install backdrop by using the following go command
+### Install via Go
+
+<details>
+<summary>Steps to Install Using Go (v1.21 or Later)</summary>
+
 ```bash
 go install github.com/JanMichaelSE/backdrop@latest
 ```
 
-### Provided binary
-you can install Backdrop by downloading and unziping the `tar.gz` file for your operating system (if available) that is included in the release
-```bash
-tar -xzf backdrop-gnome-desktop-v1.0.0.linux-amd64.tar.gz
-```
+</details>
 
-After place it under the following path:
-```bash
-mkdir -p $HOME/.backdrop/bin
-cp backdrop $HOME/.backdrop/bin
-```
+### Provided Binary
 
-Finally add the binary into the `PATH` variable
-```bash
-echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
-source $HOME/.bashrc
-```
+<details>
+<summary>Download and Install the Binary</summary>
 
-### From Source code
-You can install it by compiling the source code
-```bash
-git clone https://github.com/JanMichaelSE/backdrop.git
-cd backdrop
-go build
-```
+1. Download and unzip the `tar.gz` file for your operating system from the [Releases Page](https://github.com/JanMichaelSE/backdrop/releases).
+2. Extract the archive:
+   ```bash
+   tar -xzf backdrop-gnome-desktop-v{current_version}.linux-amd64.tar.gz
+   ```
+3. Move the binary to the following path:
+   ```bash
+   mkdir -p $HOME/.backdrop/bin
+   cp backdrop $HOME/.backdrop/bin
+   ```
+4. Add the binary to your `PATH`:
+   ```bash
+   echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
+   source $HOME/.bashrc
+   ```
+   </details>
 
-Optionally move it to a directory in your PATH.
-```bash
-mv backdrop $HOME/.backdrop/bin
-```
+### Windows Installation
 
-Finally add the binary into the `PATH` variable
-```bash
-echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
-source $HOME/.bashrc
-```
+<details>
+<summary>Steps to Add Binary to Windows PATH</summary>
+
+1. Download the binary from the [Releases Page](https://github.com/JanMichaelSE/backdrop/releases).
+2. Navigate to **Start Menu** and search for "Environment Variables".
+3. Open "**Edit the System Environment Variables**".
+4. Go to the "**Advanced**" tab and click "**Environment Variables**".
+5. Edit the **Path** variable under System Variables and add the folder where the `backdrop.exe` binary is located. (Do not include the binary name.)
+
+</details>
+
+### Install From Source Code
+
+<details>
+<summary>Steps to Build and Install From Source</summary>
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/JanMichaelSE/backdrop.git
+   cd backdrop
+   ```
+2. Build the project:
+   ```bash
+   go build
+   ```
+3. Move the binary to a directory in your `PATH`:
+   ```bash
+   mv backdrop $HOME/.backdrop/bin
+   ```
+4. Add the binary to your `PATH`:
+   ```bash
+   echo 'export PATH=$HOME/.backdrop/bin:$PATH' >> $HOME/.bashrc
+   source $HOME/.bashrc
+   ```
+   </details>
+
+---
 
 ## :wastebasket: Uninstall
 
+### Uninstall Using Go
+
+<details>
+<summary>Steps to Uninstall</summary>
+
 ```bash
 rm $(go env GOPATH)/bin/backdrop
-go clean -modcache # <- Optional
+go clean -modcache  # Optional
 ```
+
+</details>
+
+### Uninstall on Linux
+
+<details>
+<summary>Steps to Remove Installed Binary</summary>
+
+1. Locate the binary:
+   ```bash
+   which backdrop
+   ```
+2. Delete the binary:
+   ```bash
+   rm /path/to/backdrop
+   ```
+3. (Optional) Remove configuration files, if applicable:
+   ```bash
+   rm -rf $HOME/.backdrop
+   ```
+4. Edit ~/.bashrc and remove the line that adds Backdrop to PATH
+   ```bash
+   nano ~/.bashrc
+   ```
+   Remove the following line (or equivalent):
+   ```bash
+   export PATH=$HOME/.backdrop/bin:$PATH
+   ```
+
+</details>
+  
+### Uninstall on Windows
+
+<details>
+<summary>Steps to Remove Installed Binary</summary>
+
+1. Open a Command Prompt and verify the location of the binary:
+   ```powershell
+   where backdrop
+   ```
+2. Remove the folder path from your PATH environment variable:
+    - Navigate to Start Menu and search for "Environment Variables".
+    - Open Edit the System Environment Variables.
+    - In the Advanced tab, click Environment Variables.
+    - Under the System Variables, select Path and click Edit.
+    - Remove the folder containing backdrop.exe from the list.
+</details>
+
+---
 
 ## &#x2705; What's Supported
 
-#### Operating Systems
-- Ubuntu/GNOME based Distros
-- CentOS/MATE (Doesn't support Slideshows)
-- Coming Soon:
-    - MacOS
-    - Microsoft (Make a PR because I won't do it)
-- Will not be Supported:
-    - WSL
+### Operating Systems
+
+- **Supported**:
+  - Ubuntu/GNOME-based Distros
+  - CentOS/MATE (Slideshows are not supported)
+  - Windows (Slideshows are not supported)
+- **Coming Soon**:
+  - macOS
+- **Not Supported**:
+  - WSL (Windows Subsystem for Linux)
+
+---
 
 ## :computer: Usage
 
 Backdrop provides several options for managing your wallpapers:
 
-- `-p, --path <PATH>`: 
-    - Set a custom path to find wallpaper images. If not provided, a default path will be used.
-- `-h, --help`: 
-    - Displays help information on how to use the command, listing all available options.
-- `-s, --slideshow`: 
-    - Will configure and set a custom slideshow of images you select with fzf. To select multiple images hit "Tab" on the images you desire to select, then hit "Enter" to confirm.
-- `-u, --url`: 
-    - You will be prompted to provide an image url to be set as wallpaper. The image will be downloaded and previewed. If confirmed, the image will be downloaded to the directory were all images are found (check "IMAGES" section). If image is NOT accepted by user, the image gets deleted and previous wallpaper is set.
-- `-v, --version`: 
-    - Print version information.
+- `-p, --path <PATH>`:
+  - Set a custom path for wallpaper images. Defaults to `$HOME/.backdrop/images` if not provided.
+- `-h, --help`:
+  - Displays help information on available commands.
+- `-s, --slideshow`:
+  - Configure and set a slideshow using images selected with `fzf`.
+- `-u, --url`:
+  - Download and set an image from a URL. Unaccepted images are deleted.
+- `-v, --version`:
+  - Print version information.
 
-For example, to set a custom path for your wallpapers, you can use the `-p` or `--path` flag:
+### Example: Set a Custom Wallpaper Directory
 
 ```bash
 backdrop --path /path/to/your/wallpapers
 ```
 
+
+---
+
 ## :busts_in_silhouette: Authors
 
-Backdrop is currently maintained by JanMichaelSE.
+Backdrop is maintained by **JanMichaelSE**.
+
+---
 
 ## :handshake: Contributing
 
@@ -117,6 +212,8 @@ Contributions are always welcome! If you'd like to contribute, please follow the
 5. Open a Pull Request
 
 For any issues, please open an issue on GitHub.
+
+---
 
 ## :email: Support
 
