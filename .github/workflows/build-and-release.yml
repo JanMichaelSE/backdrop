@@ -6,7 +6,6 @@ on:
       - closed
     branches:
       - main
-
     paths-ignore:
       - ".github/**"
 
@@ -33,7 +32,9 @@ jobs:
 
       - name: Get version
         id: publish
-        run: echo "version=$(./backdrop -v | cut -d " " -f3)" >> $GITHUB_OUTPUT
+        run: |
+          version=$(./backdrop -v | cut -d " " -f3)
+          echo "version=$version" >> $GITHUB_OUTPUT
 
   release:
     needs: version
@@ -45,7 +46,7 @@ jobs:
       - name: Get Code
         uses: actions/checkout@v4
 
-      - name: version verification
+      - name: Version verification
         run: echo "Version to release:" "${{ needs.version.outputs.backdrop-version }}"
 
       - name: Create Release
@@ -61,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   Artifacts:
-    needs: release
+    needs: [version, release]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -75,18 +76,38 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: build artifact
+      # Build Linux Artifact
+      - name: Build Linux Artifact
         run: go build
 
-      - name: Compress Artifact
+      # Build Windows Artifcat
+      - name: Build Windows Artifact
+        run: GOOS=windows GOARCH=amd64 go build -o backdrop.exe
+
+      # Compress Artifacts
+      - name: Compress Linux Artifact
         run: tar -czvf backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz backdrop
 
-      - name: upload linux artifact
+      - name: Compress Windows Artifact
+        run: zip backdrop-v${{ needs.version.outputs.backdrop-version }}.windows-amd64.zip backdrop.exe
+
+      # Upload Artifacts
+      - name: Upload Linux Artifact
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz
           asset_name: backdrop-gnome-desktop-v${{ needs.version.outputs.backdrop-version }}.linux-amd64.tar.gz
           asset_content_type: application/gzip
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: backdrop-v${{ needs.version.outputs.backdrop-version }}.windows-amd64.zip
+          asset_name: backdrop-v${{ needs.version.outputs.backdrop-version }}.windows-amd64.zip
+          asset_content_type: application/zip

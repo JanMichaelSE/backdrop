@@ -36,7 +36,7 @@ var rootCmd = &cobra.Command{
 	Long: `backdrop is a command-line utility for managing wallpapers on your desktop.
 It allows you to set a new wallpaper, revert to a previous wallpaper, 
 and specify the directory where your wallpaper images are stored.`,
-	Version:      "1.1.0",
+	Version:      "2.0.0",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
