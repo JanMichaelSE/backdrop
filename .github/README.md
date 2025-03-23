@@ -28,7 +28,7 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 <summary>Steps to Install Using Go (v1.21 or Later)</summary>
 
 ```bash
-go install github.com/JanMichaelSE/backdrop@latest
+go install github.com/janmichaelse/backdrop@latest
 ```
 
 </details>
