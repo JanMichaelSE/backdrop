@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -37,9 +38,11 @@ func handleSlideshow(out io.Writer, wallpapersPath string, wallpapers []string, 
 			return err
 		}
 
-		err = setWallpaper(selectedWallpaper)
-		if err != nil {
-			return err
+		if runtime.GOOS != "windows" {
+			err = setWallpaper(selectedWallpaper)
+			if err != nil {
+				return err
+			}
 		}
 
 		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, func() {})
@@ -53,7 +56,7 @@ func handleSlideshow(out io.Writer, wallpapersPath string, wallpapers []string, 
 
 func userDuration(r io.Reader) (int, error) {
 	reader := bufio.NewReader(r)
-	fmt.Print("What should be the duration per slide? (In Seconds): ")
+	fmt.Print("What should be the duration per slide? (In minutes): ")
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
@@ -65,7 +68,7 @@ func userDuration(r io.Reader) (int, error) {
 	if err != nil || duration <= 0 {
 		return 0, fmt.Errorf("invalid duration: please enter a positive integer")
 	}
-
+	duration = duration * 60_000
 	return duration, nil
 }
 
@@ -76,11 +79,80 @@ func configureSlideShow(imageText, wallpapersPath string, duration int) (string,
 	case "linux":
 		return configureSlideShowLinux(images, wallpapersPath, duration)
 	case "windows":
-		return "", fmt.Errorf("SlideShow is currently not supported for Windows.")
+		return configureSlideShowWindows(images, wallpapersPath, duration)
 
 	default:
 		return "", ErrNoCompatibleOS
 	}
+}
+
+func configureSlideShowWindows(images []string, wallpapersPath string, duration int) (string, error) {
+	slideShowDir := filepath.Join(os.Getenv("APPDATA"), "BackdropSlideShow")
+
+	if err := os.MkdirAll(slideShowDir, 0777); err != nil {
+		return "", fmt.Errorf("failed to create slideshow directory: %w", err)
+	}
+
+	for _, img := range images {
+		src := filepath.Join(wallpapersPath, img)
+		dst := filepath.Join(slideShowDir, filepath.Base(img))
+
+		data, err := os.ReadFile(src)
+
+		if err != nil {
+			return "", fmt.Errorf("failed to read image %s: %w", src, err)
+		}
+
+		if err := os.WriteFile(dst, data, 0666); err != nil {
+			return "", fmt.Errorf("failed to write imageto slideshow folder: %w", err)
+		}
+	}
+
+	if err := setWindowsSlideshow(slideShowDir, duration); err != nil {
+		return "", err
+	}
+	firstImagePath := filepath.Join(slideShowDir, filepath.Base(images[0]))
+	themeFile, err := createWindowsThemeFile(firstImagePath, slideShowDir, duration)
+	if err != nil {
+		return "", fmt.Errorf("failed to create theme file: %w", err)
+	}
+
+	err = applyWindowsTheme(themeFile)
+	if err != nil {
+		return "", err
+	}
+
+	return slideShowDir, nil
+}
+
+func setWindowsSlideshow(folder string, duration int) error {
+
+	cmd := exec.Command("powershell", "-Command", fmt.Sprintf(`
+$RegPath = "HKCU:\Control Panel\Personalization\Desktop Slideshow"
+Set-ItemProperty -Path $RegPath -Name Interval -Value %d
+Set-ItemProperty -Path $RegPath -Name Shuffle -Value 1
+Set-ItemProperty -Path $RegPath -Name SlideshowEnabled -Value 1
+
+$ThemePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes"
+Set-ItemProperty -Path $ThemePath -Name SlideshowDirectory -Value "%s"
+
+$WallpaperPath = "HKCU:\Control Panel\Desktop"
+Set-ItemProperty -Path $WallpaperPath -Name Wallpaper -Value ""
+Set-ItemProperty -Path $WallpaperPath -Name WallpaperStyle -Value 10
+Set-ItemProperty -Path $WallpaperPath -Name TileWallpaper -Value 0
+
+# Critical: Remove corrupted or cached wallpaper to avoid black background
+$transcoded = "$env:APPDATA\Microsoft\Windows\Themes\TranscodedWallpaper"
+if (Test-Path $transcoded) { Remove-Item $transcoded -Force -ErrorAction SilentlyContinue }
+
+RUNDLL32.EXE user32.dll, UpdatePerUserSystemParameters
+`, duration, folder))
+
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to set registry slideshow values: %v\n%s", err, output)
+	}
+
+	return nil
 }
 
 func configureSlideShowLinux(images []string, wallpapersPath string, duration int) (string, error) {
@@ -103,20 +175,23 @@ func configureSlideShowLinux(images []string, wallpapersPath string, duration in
 }
 
 func createSlideShowDirectory() (string, string, error) {
-	homePath, err := os.UserHomeDir()
-	if err != nil {
-		return "", "", fmt.Errorf("unable to find user home directory: %w", err)
-	}
-
 	switch runtime.GOOS {
 	case "linux":
+		homePath, err := os.UserHomeDir()
+		if err != nil {
+			return "", "", fmt.Errorf("unable to find user home directory: %w", err)
+		}
 		return configureLinuxSlideShowPaths(homePath)
 	case "windows":
-		return "", "", fmt.Errorf("SlideShow is currently not supported for Windows.")
+		return configureWindowsSlideShowPaths()
 
 	default:
 		return "", "", ErrNoCompatibleOS
 	}
+}
+
+func configureWindowsSlideShowPaths() (string, string, error) {
+	return "", "", fmt.Errorf("configureWindowsSlideShowPaths is not implemented")
 }
 
 func configureLinuxSlideShowPaths(homePath string) (string, string, error) {
@@ -227,4 +302,85 @@ func createSlideShowConfigFile(images []string, configFile, wallpapersPath strin
 	}
 
 	return file.Name(), nil
+}
+
+func createWindowsThemeFile(firstImagePath, slideshowDir string, duration int) (string, error) {
+	themesDir := filepath.Join(os.Getenv("LOCALAPPDATA"), "Microsoft", "Windows", "Themes")
+	if err := os.MkdirAll(themesDir, 0777); err != nil {
+		return "", fmt.Errorf("failed to create themes directory: %w", err)
+	}
+
+	themeFilePath := filepath.Join(themesDir, "backdrop.theme")
+
+	content := fmt.Sprintf(`[Theme]
+DisplayName=Backdrop Slideshow
+
+[Control Panel\Desktop]
+wallpaper=%s
+TileWallpaper=0
+WallpaperStyle=10
+PicturePosition=10
+SlideshowEnabled=1
+MultimonBackgrounds=1
+
+[Slideshow]
+ImagesRootPath=%s
+Interval=%d
+Shuffle=1
+
+[VisualStyles]
+Path=%%SystemRoot%%\resources\Themes\Aero\Aero.msstyles
+ColorStyle=NormalColor
+Size=NormalSize
+AutoColorization=0
+VisualStyleVersion=10
+
+[MasterThemeSelector]
+MTSM=RJSPBS
+
+[Sounds]
+SchemeName=@mmres.dll,-800
+`, firstImagePath, slideshowDir, duration)
+
+	if err := os.WriteFile(themeFilePath, []byte(content), 0666); err != nil {
+		return "", fmt.Errorf("failed to write theme file: %w", err)
+	}
+
+	return themeFilePath, nil
+}
+
+func applyWindowsTheme(themePath string) error {
+	if themePath == "" {
+		return fmt.Errorf("themePath is empty")
+	}
+	psScript := fmt.Sprintf(`
+# Set theme path
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes" -Name "CurrentTheme" -Value "%s"
+
+# Set slideshow options
+Set-ItemProperty -Path "HKCU:\\Control Panel\\Desktop" -Name "SlideshowEnabled" -Value 1
+Set-ItemProperty -Path "HKCU:\\Control Panel\\Personalization\\Desktop Slideshow" -Name "SlideshowEnabled" -Value 1
+Set-ItemProperty -Path "HKCU:\\Control Panel\\Desktop\\PerMonitorSettings" -Name "SlideshowEnabled" -Value 1 -ErrorAction SilentlyContinue
+
+# Clear TranscodedWallpaper (sometimes holds stale data)
+$transcoded = "$env:APPDATA\\Microsoft\\Windows\\Themes\\TranscodedWallpaper"
+if (Test-Path $transcoded) { Remove-Item $transcoded -Force -ErrorAction SilentlyContinue }
+
+# Refresh system settings
+RUNDLL32.EXE user32.dll, UpdatePerUserSystemParameters
+
+# 🧠 Apply the .theme file again to force slideshow to start (silent, but effective)
+Start-Process -FilePath "%s" -WindowStyle Hidden
+
+Start-Sleep -Milliseconds 500
+`, themePath, themePath)
+
+	cmd := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", psScript)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to apply theme: %w\nOutput: %s", err, string(output))
+	}
+
+	fmt.Fprintln(os.Stdout, "Theme applied output:", string(output))
+	return nil
 }
