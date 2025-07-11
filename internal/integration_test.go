@@ -112,11 +112,6 @@ func TestConfigurePath(t *testing.T) {
 }
 
 func TestSetSlideShow(t *testing.T) {
-
-	if runtime.GOOS == "windows" {
-		t.Skip("SlideShow is not supported on Windows")
-	}
-
 	initialWallpaper, err := getPreviousWallpaper()
 	if err != nil {
 		t.Fatalf("Error getting system initial wallpaper for eventual cleanup after tests: %v", err)
@@ -129,7 +124,8 @@ func TestSetSlideShow(t *testing.T) {
 	testCase := testConfig{
 		config:            NewConfig("../test/testData/images", false, true),
 		inputConfirmation: "y\n",
-		expOutput:         "Successfully changed background image!",
+		inputDuration:     "10\n",
+		expOutput:         "Slideshow has been set successfully.",
 		expError:          nil,
 		imageSelectorStub: func(c *Config) FuzzySelection {
 			return func(s []string) (string, error) {
@@ -141,8 +137,42 @@ func TestSetSlideShow(t *testing.T) {
 	var out bytes.Buffer
 	getSelector = testCase.imageSelectorStub
 	inputConfirmation = strings.NewReader(testCase.inputConfirmation)
+	inputDuration = strings.NewReader(testCase.inputDuration)
+
 	if err := BackdropAction(&out, testCase.config, []string{}); err != nil {
 		t.Errorf("Expected NO error, but got '%v' instead", err)
+	}
+
+	if !strings.Contains(out.String(), testCase.expOutput) {
+		t.Errorf("Expected output '%v', but got '%v' instead", testCase.expOutput, out.String())
+	}
+
+	switch runtime.GOOS {
+	case "windows":
+		appData := os.Getenv("APPDATA")
+		slideshowDir := filepath.Join(appData, "BackdropSlideShow")
+		themeFile := filepath.Join(os.Getenv("LOCALAPPDATA"), "Microsoft", "Windows", "themes", "backdrop.theme")
+
+		if _, err := os.Stat(slideshowDir); os.IsNotExist(err) {
+			t.Errorf("Expected slideshow directory to exist: %s", slideshowDir)
+		}
+		if _, err := os.Stat(themeFile); os.IsNotExist(err) {
+			t.Errorf("Expected theme file to exist: %s", themeFile)
+		}
+	case "linux":
+		currentSlideShowSettings := getCurrentBackdropSlideShowSettings(t)
+		expectedSlideShowSettings := getExpectedBackdropSlideShowSettings(t)
+		if currentSlideShowSettings != expectedSlideShowSettings {
+			t.Errorf("Expected slide show settings:\n %v \nGot slide show settings:\n %v", expectedSlideShowSettings, currentSlideShowSettings)
+		}
+
+		currentWallpaper, err := getPreviousWallpaper()
+		if err != nil {
+			t.Fatalf("Unexpected error getting wallpaper: %v", err)
+		}
+		if !strings.Contains(currentWallpaper, "backdrop_settings.xml") {
+			t.Errorf("Expected wallpaper '%v' to be set for slideshow, but got '%v' instead", "backdrop_settings.xml", currentWallpaper)
+		}
 	}
 
 	wallpapersPath, err := getUserWallpapersPath()
@@ -152,20 +182,6 @@ func TestSetSlideShow(t *testing.T) {
 
 	if !strings.Contains(wallpapersPath, testCase.config.path) {
 		t.Errorf("Expected image path '%v', got image path '%v'", testCase.config.path, wallpapersPath)
-	}
-
-	currentWallpaper, err := getPreviousWallpaper()
-	if err != nil {
-		t.Fatalf("Unexpected error getting wallpaper: %v", err)
-	}
-	if !strings.Contains(currentWallpaper, "backdrop_settings.xml") {
-		t.Errorf("Expected wallpaper '%v' to be set for slideshow, but got '%v' instead", "backdrop_settings.xml", currentWallpaper)
-	}
-
-	currentSlideShowSettings := getCurrentBackdropSlideShowSettings(t)
-	expectedSlideShowSettings := getExpectedBackdropSlideShowSettings(t)
-	if currentSlideShowSettings != expectedSlideShowSettings {
-		t.Errorf("Expected slide show settings:\n %v \nGot slide show settings:\n %v", expectedSlideShowSettings, currentSlideShowSettings)
 	}
 
 	if !strings.Contains(out.String(), testCase.expOutput) {
