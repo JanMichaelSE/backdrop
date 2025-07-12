@@ -77,7 +77,6 @@ func handleSelectionConfirmation(previousWallpaper, prompt, successMessage strin
 	if successMessage == "" {
 		successMessage = "Successfully changed background image!"
 	}
-
 	for {
 		userInput, err := userConfirmationWithPrompt(inputConfirmation, prompt)
 		if err != nil {
