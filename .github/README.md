@@ -151,8 +151,13 @@ go clean -modcache  # Optional
    ```powershell
    where backdrop
    ```
-2. Remove the folder path from your PATH environment variable: - Navigate to Start Menu and search for "Environment Variables". - Open Edit the System Environment Variables. - In the Advanced tab, click Environment Variables. - Under the System Variables, select Path and click Edit. - Remove the folder containing backdrop.exe from the list.
-</details>
+2. Remove the folder path from your PATH environment variable:
+   - Navigate to Start Menu and search for "Environment Variables".
+   - Open Edit the System Environment Variables.
+   - In the Advanced tab, click Environment Variables.
+   - Under the System Variables, select Path and click Edit.
+   - Remove the folder containing backdrop.exe from the list.
+   </details>
 
 ---
 
