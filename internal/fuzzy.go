@@ -46,7 +46,12 @@ func handleFuzzySearch(out io.Writer, wallpapersPath string, wallpapers []string
 			return err
 		}
 
-		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, "", "", out, func() {})
+		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, &SelectionOptions{
+			Prompt:         "",
+			SuccessMessage: "",
+			Cleanup:        func() {},
+		})
+
 		if err != nil {
 			return err
 		}

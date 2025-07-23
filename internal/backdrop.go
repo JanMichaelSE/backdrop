@@ -15,6 +15,12 @@ type Config struct {
 	isSlideShow bool
 }
 
+type SelectionOptions struct {
+	Prompt         string
+	SuccessMessage string
+	Cleanup        func()
+}
+
 func NewConfig(path string, isImageUrl, isSlideShow bool) *Config {
 	return &Config{
 		path:        path,
@@ -69,11 +75,13 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 	return nil
 }
 
-func handleSelectionConfirmation(previousWallpaper, prompt, successMessage string, out io.Writer, cleanup func()) (bool, error) {
+func handleSelectionConfirmation(previousWallpaper string, out io.Writer, opts *SelectionOptions) (bool, error) {
+	prompt := opts.Prompt
 	if prompt == "" {
 		prompt = "Want to save this change? [y/N]: "
 	}
 
+	successMessage := opts.SuccessMessage
 	if successMessage == "" {
 		successMessage = "Successfully changed background image!"
 	}
@@ -92,7 +100,7 @@ func handleSelectionConfirmation(previousWallpaper, prompt, successMessage strin
 				return false, err
 			}
 
-			cleanup()
+			opts.Cleanup()
 			return false, nil
 		default:
 			fmt.Fprintln(out, "Invalid input...")

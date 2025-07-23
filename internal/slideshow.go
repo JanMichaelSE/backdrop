@@ -27,7 +27,12 @@ func handleSlideshow(out io.Writer, wallpapersPath string, wallpapers []string, 
 			return err
 		}
 
-		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, "Save slideshow configuration? [y/N]: ", "Slideshow has been set successfully.", out, func() {})
+		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, &SelectionOptions{
+			Prompt:         "Save slideshow configuration? [y/N]: ",
+			SuccessMessage: "Slideshow has been set successfully.",
+			Cleanup:        func() {},
+		})
+
 		if err != nil {
 			return err
 		}

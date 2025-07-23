@@ -10,6 +10,28 @@
 
 Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored.
 
+## 📚 Table of Contents
+
+- [:star: Features](#star-features)
+  - [Windows Features](#windows-features)
+- [:wrench: Installation](#wrench-installation)
+  - [Install via Go](#install-via-go)
+  - [Provided Binary](#provided-binary)
+  - [Windows Installation](#windows-installation)
+  - [Install From Source Code](#install-from-source-code)
+- [:wastebasket: Uninstall](#wastebasket-uninstall)
+  - [Uninstall Using Go](#uninstall-using-go)
+  - [Uninstall on Linux](#uninstall-on-linux)
+  - [Uninstall on Windows](#uninstall-on-windows)
+- [✅ What's Supported](#-whats-supported)
+- [:computer: Usage](#computer-usage)
+  - [Example: Set a Custom Wallpaper Directory](#example-set-a-custom-wallpaper-directory)
+- [⚠️ Known Issues](#️-known-issues)
+- [:busts_in_silhouette: Authors](#busts_in_silhouette-authors)
+- [:handshake: Contributing](#handshake-contributing)
+- [:email: Support](#email-support)
+- [:moneybag: Donations](#moneybag-donations)
+
 ## :star: Features
 
 - Set a new wallpaper.

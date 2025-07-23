@@ -19,7 +19,8 @@
 
 - Version updated from `2.0.0` to `2.1.0`.
 - Modularized slideshow handling into `windows.go` and `linux.go`.
-- Refactored `handleSelectionConfirmation` to support dynamic prompts and messages.
+- Refactored `handleSelectionConfirmation` to use a `SelectionOptions` struct for optional parameters, improving flexibility and readability.
+- Updated all usages (including in `handleImageUrl`) to use the new struct-based signature.
 - Test cases now include Windows-specific slideshow validation (theme and folder checks).
 
 ### 🧹 Removed
