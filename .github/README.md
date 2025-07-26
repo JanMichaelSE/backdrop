@@ -10,28 +10,6 @@
 
 Welcome to **Backdrop**, a command-line utility designed to manage your desktop wallpapers with ease through the terminal. This tool allows you to set a new wallpaper, use fuzzy finding to select wallpaper, and specify the directory where your wallpaper images are stored.
 
-## 📚 Table of Contents
-
-- [:star: Features](#star-features)
-  - [Windows Features](#windows-features)
-- [:wrench: Installation](#wrench-installation)
-  - [Install via Go](#install-via-go)
-  - [Provided Binary](#provided-binary)
-  - [Windows Installation](#windows-installation)
-  - [Install From Source Code](#install-from-source-code)
-- [:wastebasket: Uninstall](#wastebasket-uninstall)
-  - [Uninstall Using Go](#uninstall-using-go)
-  - [Uninstall on Linux](#uninstall-on-linux)
-  - [Uninstall on Windows](#uninstall-on-windows)
-- [✅ What's Supported](#-whats-supported)
-- [:computer: Usage](#computer-usage)
-  - [Example: Set a Custom Wallpaper Directory](#example-set-a-custom-wallpaper-directory)
-- [⚠️ Known Issues](#️-known-issues)
-- [:busts_in_silhouette: Authors](#busts_in_silhouette-authors)
-- [:handshake: Contributing](#handshake-contributing)
-- [:email: Support](#email-support)
-- [:moneybag: Donations](#moneybag-donations)
-
 ## :star: Features
 
 - Set a new wallpaper.
@@ -39,11 +17,6 @@ Welcome to **Backdrop**, a command-line utility designed to manage your desktop 
 - Specify a custom directory for wallpaper images.
 - Create custom slideshows with a desired duration per slide.
 - Set wallpapers using a URL to an image.
-
-### Windows Features
-
-- Full slideshow support on Windows via `.theme` file (multi-monitor aware).
-- Auto-cleans cached wallpapers to prevent black screens.
 
 ---
 
@@ -174,12 +147,12 @@ go clean -modcache  # Optional
    where backdrop
    ```
 2. Remove the folder path from your PATH environment variable:
-   - Navigate to Start Menu and search for "Environment Variables".
-   - Open Edit the System Environment Variables.
-   - In the Advanced tab, click Environment Variables.
-   - Under the System Variables, select Path and click Edit.
-   - Remove the folder containing backdrop.exe from the list.
-   </details>
+    - Navigate to Start Menu and search for "Environment Variables".
+    - Open Edit the System Environment Variables.
+    - In the Advanced tab, click Environment Variables.
+    - Under the System Variables, select Path and click Edit.
+    - Remove the folder containing backdrop.exe from the list.
+</details>
 
 ---
 
@@ -187,14 +160,14 @@ go clean -modcache  # Optional
 
 ### Operating Systems
 
-- **Fully Supported**:
+- **Supported**:
   - Ubuntu/GNOME-based Distros
-  - Windows (Slideshow included via `.theme` file)
-- **Limited Support**:
   - CentOS/MATE (Slideshows are not supported)
+  - Windows (Slideshows are not supported)
+- **Coming Soon**:
+  - macOS (Make a PR because I won't do it)
 - **Not Supported**:
   - WSL (Windows Subsystem for Linux)
-  - macOS (Make a PR because we won't do it)
 
 ---
 
@@ -208,9 +181,6 @@ Backdrop provides several options for managing your wallpapers:
   - Displays help information on available commands.
 - `-s, --slideshow`:
   - Configure and set a slideshow using images selected with `fzf`.
-  - On Windows, selected images are copied to `%APPDATA%\BackdropSlideShow`, and a `.theme` file is generated and applied silently.
-  - On Linux, a `backdrop_settings.xml` slideshow config is created in `~/.local/share/backgrounds`.
-  - You will be prompted for the slideshow duration in minutes.
 - `-u, --url`:
   - Download and set an image from a URL. Unaccepted images are deleted.
 - `-v, --version`:
@@ -222,11 +192,6 @@ Backdrop provides several options for managing your wallpapers:
 backdrop --path /path/to/your/wallpapers
 ```
 
----
-
-## ⚠️ Known Issues
-
-- On Windows, applying a slideshow theme may open the Settings window.
 
 ---
 
