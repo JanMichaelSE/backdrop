@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/janmichaelse/backdrop/internal/os_Specifics"
 	"github.com/spf13/viper"
 )
 
@@ -18,16 +19,28 @@ const (
 )
 
 func configureWallpaperPath(path string) error {
-	homePath, err := os.UserHomeDir()
-	if err != nil {
-		return err
+	viper.Set("WallpapersPath", path)
+
+	var configPath string
+	var err error
+
+	switch runtime.GOOS {
+	case "windows":
+		configPath, err = os_Specifics.GetWindowsConfigFilePath()
+	case "linux":
+		configPath, err = os_Specifics.GetLinuxConfigFilePath()
+	default:
+		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
 
-	viper.Set("WallpapersPath", path)
-	configPath := filepath.Join(homePath, ".backdrop.yaml")
+	if err != nil {
+		return fmt.Errorf("failed to get config file path: %w", err)
+	}
+
 	if err := viper.WriteConfigAs(configPath); err != nil {
 		return fmt.Errorf("%w : %v", ErrCouldNotConfigureImagePath, err)
 	}
+
 	return nil
 }
 
@@ -47,19 +60,26 @@ func getUserWallpapersPath() (string, error) {
 
 	switch runtime.GOOS {
 	case "linux":
-		configPath = filepath.Join(homePath, ".config", "backdrop", "wallpapers")
+		configPath, err = os_Specifics.GetLinuxConfigPath()
+		if err != nil {
+			return "", err
+		}
 	case "windows":
-		// TODO: Implement config file for windows
-		configPath = ""
-	}
+		configPath = os_Specifics.GetWindowsConfigPath()
 
-	if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
-		return configPath, nil
-	}
+		// Check if config directory exists
+		if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
+			return configPath, nil
+		}
 
-	picturesPath := filepath.Join(homePath, "Pictures", "wallpapers")
-	if stat, err := os.Stat(picturesPath); err == nil && stat.IsDir() {
-		return picturesPath, nil
+		if stat, err := os.Stat(configPath); err == nil && stat.IsDir() {
+			return configPath, nil
+		}
+
+		picturesPath := filepath.Join(homePath, "Pictures", "wallpapers")
+		if stat, err := os.Stat(picturesPath); err == nil && stat.IsDir() {
+			return picturesPath, nil
+		}
 	}
 
 	return "", ErrNoValidImagesPath

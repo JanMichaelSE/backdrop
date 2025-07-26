@@ -4,7 +4,7 @@ import "errors"
 
 var (
 	ErrNoCompatibleDesktopEnvironment = errors.New("No compatible desktop environment found for setting wallpaper")
-	ErrNoCompatibleOS                 = errors.New("No compatible desktop environment found for setting wallpaper")
+	ErrNoCompatibleOS                 = errors.New("No compatible os found for setting wallpaper")
 	ErrUserCanceledSelection          = errors.New("User canceled selection, exiting program")
 	ErrCouldNotSetBackground          = errors.New("Error setting background wallpaper")
 	ErrCouldNotListSchemas            = errors.New("Error listing schemas")
