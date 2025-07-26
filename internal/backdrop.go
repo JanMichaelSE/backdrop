@@ -15,12 +15,6 @@ type Config struct {
 	isSlideShow bool
 }
 
-type SelectionOptions struct {
-	Prompt         string
-	SuccessMessage string
-	Cleanup        func()
-}
-
 func NewConfig(path string, isImageUrl, isSlideShow bool) *Config {
 	return &Config{
 		path:        path,
@@ -75,32 +69,23 @@ func BackdropAction(out io.Writer, config *Config, args []string) error {
 	return nil
 }
 
-func handleSelectionConfirmation(previousWallpaper string, out io.Writer, opts *SelectionOptions) (bool, error) {
-	prompt := opts.Prompt
-	if prompt == "" {
-		prompt = "Want to save this change? [y/N]: "
-	}
-
-	successMessage := opts.SuccessMessage
-	if successMessage == "" {
-		successMessage = "Successfully changed background image!"
-	}
+func handleSelectionConfirmation(previousWallpaper string, out io.Writer, cleanup func()) (bool, error) {
 	for {
-		userInput, err := userConfirmationWithPrompt(inputConfirmation, prompt)
+		userInput, err := userConfirmation(inputConfirmation)
 		if err != nil {
 			return false, err
 		}
 
 		switch userInput {
 		case "y":
-			fmt.Fprintln(out, successMessage)
+			fmt.Fprintln(out, "Successfully changed background image!")
 			return true, nil
 		case "n", "":
 			if err := setWallpaper(previousWallpaper); err != nil {
 				return false, err
 			}
 
-			opts.Cleanup()
+			cleanup()
 			return false, nil
 		default:
 			fmt.Fprintln(out, "Invalid input...")
@@ -108,9 +93,9 @@ func handleSelectionConfirmation(previousWallpaper string, out io.Writer, opts *
 	}
 }
 
-func userConfirmationWithPrompt(r io.Reader, prompt string) (string, error) {
+func userConfirmation(r io.Reader) (string, error) {
 	reader := bufio.NewReader(r)
-	fmt.Print(prompt)
+	fmt.Print("Want to save this change? [y/N]: ")
 
 	input, err := reader.ReadString('\n')
 	if err != nil {

@@ -41,12 +41,7 @@ func handleImageUrl(out io.Writer, wallpapersPath string) error {
 			os.Remove(image)
 		}
 
-		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, &SelectionOptions{
-			Prompt:         "",
-			SuccessMessage: "",
-			Cleanup:        imageCleanup,
-		})
-
+		hasConfirmed, err = handleSelectionConfirmation(previousWallpaper, out, imageCleanup)
 		if err != nil {
 			return err
 		}
